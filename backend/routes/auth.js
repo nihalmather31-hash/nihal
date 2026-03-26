@@ -7,7 +7,7 @@ const path = require('path');
 
 const logFile = path.join(__dirname, '../server-debug.log');
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+    return jwt.sign({ id }, process.env.JWT_SECRET || 'tourism_secret_key_2026', {
         expiresIn: '30d'
     });
 };
@@ -197,7 +197,7 @@ router.get('/verify', async (req, res) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tourism_secret_key_2026');
         const user = await User.findById(decoded.id).select('-password');
 
         if (user) {

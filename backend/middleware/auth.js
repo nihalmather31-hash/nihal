@@ -22,7 +22,7 @@ const protect = async (req, res, next) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tourism_secret_key_2026');
         log(`Token decoded for user ID: ${decoded.id}`);
 
         req.user = await User.findById(decoded.id).select('-password');
