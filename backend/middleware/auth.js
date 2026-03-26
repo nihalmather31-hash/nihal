@@ -5,11 +5,7 @@ const path = require('path');
 
 const logFile = path.join(__dirname, '../server-debug.log');
 const log = (msg) => {
-    try {
-        fs.appendFileSync(logFile, new Date().toISOString() + ': ' + msg + '\n');
-    } catch (e) {
-        console.error('Error writing to log file:', e);
-    }
+    console.log(new Date().toISOString() + ': ' + msg);
 };
 
 // Middleware to verify token

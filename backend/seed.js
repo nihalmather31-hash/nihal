@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const dns = require('dns');
 // Use Google DNS to bypass ISP DNS issues with MongoDB Atlas SRV records
 dns.setDefaultResultOrder('ipv4first');
