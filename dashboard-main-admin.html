@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Admin Dashboard | Database Control</title>
+    <script src="db.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #080810 0%, #0d0d1a 50%, #100808 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== ADMIN DATA BACKGROUND ===== */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 2px solid #FFD700;
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #FFD700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logout-btn {
+            background: #ff5555;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ff3333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Location Selector */
+        .location-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+
+        /* Global Locations List */
+        .locations-list-panel {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+
+        .location-tag {
+            background: #222;
+            border: 1px solid #444;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .location-tag:hover {
+            border-color: #FFD700;
+            background: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.7rem;
+            background: #0a0a0a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            border-color: #FFD700;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #FFC700;
+        }
+
+        /* Management Layout */
+        .management-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            display: none;
+        }
+
+        .side-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: left;
+            color: #ccc;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 215, 0, 0.05);
+            border-color: #444;
+        }
+
+        .nav-item.active {
+            background: #FFD700;
+            color: #000;
+            font-weight: 700;
+        }
+
+        .content-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+        }
+
+        /* Feature Forms */
+        .grid-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Lists */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .item-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info h4 {
+            color: #FFD700;
+            margin-bottom: 0.3rem;
+        }
+
+        .item-info p {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .icon-btn:hover {
+            border-color: #FFD700;
+            color: #FFD700;
+        }
+
+        .icon-btn.delete:hover {
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: #111;
+            border: 1px solid #FFD700;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* User List Styles */
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card:hover {
+            border-color: #FFD700;
+        }
+
+        .user-meta h4 {
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-meta p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-active {
+            background: #2d6a4f;
+            color: #fff;
+        }
+
+        .badge-inactive {
+            background: #444;
+            color: #aaa;
+        }
+
+        /* Chat Modal Styles */
+        .chat-container {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: #000;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .msg.sent {
+            align-self: flex-end;
+            background: #FFD700;
+            color: #000;
+        }
+
+        .msg.received {
+            align-self: flex-start;
+            background: #333;
+            color: #fff;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Updating Database...</p>
+    </div>
+
+    <header>
+        <h1>🛡️ Database Control Center</h1>
+        <div class="user-info">
+            <span>Admin: <strong id="adminName">...</strong></span>
+            <button class="logout-btn" onclick="logout()">Secure Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Location Selection Area -->
+        <div class="location-panel">
+            <h2 style="margin-bottom: 1rem; font-size: 1.2rem;">🗺️ Step 1: Target Location</h2>
+            <div class="location-grid">
+                <div class="form-group">
+                    <label>District</label>
+                    <input type="text" id="district" placeholder="District name">
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="city" placeholder="City name">
+                </div>
+                <div class="form-group">
+                    <label>Village</label>
+                    <input type="text" id="village" placeholder="Village name">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="loadLocation()">Connect to Location</button>
+                </div>
+            </div>
+
+            <p style="margin-top: 1.5rem; font-size: 0.9rem; color: #888;">Existing Database Locations (Click to
+                Select):</p>
+            <div id="allLocations" class="locations-list-panel">
+                <p>Loading catalog...</p>
+            </div>
+        </div>
+
+        <!-- Management Area (Visible only when location is loaded) -->
+        <div class="management-layout" id="mainLayout">
+            <!-- Sidebar Navigation -->
+            <div class="side-nav">
+                <button class="nav-item active" onclick="showTab('details')">📍 Core Details</button>
+                <button class="nav-item" onclick="showTab('hotels')">🏨 Hotels & Stays</button>
+                <button class="nav-item" onclick="showTab('food')">🍽️ Food & Dining</button>
+                <button class="nav-item" onclick="showTab('transport')">🚗 Transport</button>
+                <button class="nav-item" onclick="showTab('events')">🎭 Events & Festivals</button>
+                <button class="nav-item" onclick="showTab('spots')">📸 Tourist Spots</button>
+                <button class="nav-item" onclick="showTab('fuel')">⛽ Fuel Stations</button>
+                <button class="nav-item" onclick="showTab('emergency')">🚑 Emergency</button>
+                <button class="nav-item" onclick="showTab('other')">💼 Other Services</button>
+                <hr style="border:0; border-top:1px solid #333; margin:0.5rem 0;">
+                <button class="nav-item" onclick="showTab('users')">👥 User Activity & Chat</button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-panel">
+                <div id="tab-details" class="tab-content">
+                    <div class="panel-header">
+                        <h2 id="locHeading">General Information</h2>
+                    </div>
+                    <form onsubmit="saveBaseDetails(event)">
+                        <div class="form-group">
+                            <label>General Description</label>
+                            <textarea id="locDesc" rows="6"
+                                placeholder="Write a detailed description of this location..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Best Time to Visit</label>
+                            <input type="text" id="locBestTime" placeholder="e.g., September to March">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Emergency</button>
+                    </form>
+                </div>
+
+                <div id="tab-users" class="tab-content" style="display: none;">
+                    <div class="panel-header">
+                        <h2>👥 Users & Activity</h2>
+                        <button class="btn btn-primary" onclick="loadUsers()">Refresh Users</button>
+                    </div>
+                    <div id="userList" class="user-list">
+                        <p>Loading users...</p>
+                    </div>
+                </div>
+
+                <div id="tab-emergency" class="tab-content" style="display: none;">
+                    <div class="panel-header">
+                        <h2>🚑 Emergency Contacts</h2>
+                    </div>
+                    <form onsubmit="saveEmergency(event)">
+                        <div class="form-group">
+                            <label>Police Station Contact</label>
+                            <input type="text" id="ePolice" placeholder="+91 ...">
+                        </div>
+                        <div class="form-group">
+                            <label>Hospital Contact</label>
+                            <input type="text" id="eHospital" placeholder="+91 ...">
+                        </div>
+                        <div class="form-group">
+                            <label>Fire Station Contact</label>
+                            <input type="text" id="eFire" placeholder="+91 ...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Emergency Data</button>
+                    </form>
+                </div>
+
+                <!-- Generic Category Manager (Used for all other tabs) -->
+                <div id="categoryManager" class="tab-content" style="display: none;">
+                    <div class="panel-header">
+                        <h2 id="catTitle">Category Name</h2>
+                    </div>
+
+                    <div id="addFormWrapper">
+                        <!-- Dynamic Form Inserted Here -->
+                    </div>
+
+                    <h3 style="margin: 2rem 0 1rem; border-top: 1px solid #333; padding-top: 1.5rem;">Existing Entries
+                    </h3>
+                    <div id="categoryList" class="item-list">
+                        <!-- Dynamic List Inserted Here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="editModalTitle">Edit Entry</h3>
+                <button class="close-modal" onclick="closeModal()">✕</button>
+            </div>
+            <div id="editModalBody"></div>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveEntryEdit()">Apply Changes</button>
+                <button class="btn" style="flex: 1; background: #333;" onclick="closeModal()">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── CONFIGURATION & STATE ──────────────────────────────────────────
+        const API_URL = '/api';
+        let _currentLoc = { d: '', c: '', v: '' };
+        let _currentPlaceData = null;
+        let _activeCategory = '';
+        let _editState = { id: '', category: '' };
+
+        const CATEGORIES = {
+            hotels: { title: '🏨 Hotels & Accommodations', fields: { name: 'text', price: 'number', description: 'textarea', contact: 'text', address: 'text', bookingLink: 'url', distance: 'number' } },
+            food: { title: '🍽️ Food & Dining Spots', fields: { name: 'text', price: 'number', description: 'textarea', contact: 'text', address: 'text', cuisine: 'text', hotelName: 'text', distance: 'number' } },
+            transport: { title: '🚗 Transport Services', fields: { name: 'text', type: 'text', route: 'text', price: 'text', contact: 'text', distance: 'number' } },
+            events: { title: '🎭 Events & Local Festivals', fields: { name: 'text', description: 'textarea', timing: 'text', venue: 'text', date: 'text', location: 'text', contact: 'text', distance: 'number' } },
+            spots: { title: '📸 Tourist Attractions', key: 'touristspots', fields: { name: 'text', description: 'textarea', price: 'text', distance: 'number' } },
+            fuel: { title: '⛽ Fuel Stations (Petrol/EV)', key: 'fuelStations', fields: { name: 'text', type: 'text', address: 'text', description: 'textarea', distance: 'number' } },
+            other: { title: '💼 Medical & Banks', fields: { name: 'text', category: 'select', price: 'text', description: 'textarea', distance: 'number' }, options: { category: ['medical', 'banks'] } }
+        };
+
+        // ── INITIALIZATION ──────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken');
+            if (!token) window.location.href = 'login-main-admin.html';
+
+            document.getElementById('adminName').textContent = localStorage.getItem('username') || 'Main Admin';
+            loadDatabaseCatalog();
+        });
+
+        // ── CATALOG LOADING ─────────────────────────────────────────────────
+        async function loadDatabaseCatalog() {
+            try {
+                const res = await fetch(`${API_URL}/places/locations`);
+                const data = await res.json();
+                if (data.success && data.data.all) {
+                    const list = document.getElementById('allLocations');
+                    list.innerHTML = '';
+                    data.data.all.forEach(loc => {
+                        const tag = document.createElement('div');
+                        tag.className = 'location-tag';
+                        tag.textContent = `${loc.district} > ${loc.city} > ${loc.village}`;
+                        tag.onclick = () => {
+                            document.getElementById('district').value = loc.district;
+                            document.getElementById('city').value = loc.city;
+                            document.getElementById('village').value = loc.village;
+                            loadLocation();
+                        };
+                        list.appendChild(tag);
+                    });
+                }
+            } catch (e) { console.error('Catalog error:', e); }
+        }
+
+        // ── LOCATION SELECTOR ───────────────────────────────────────────────
+        async function loadLocation() {
+            const d = document.getElementById('district').value.trim();
+            const c = document.getElementById('city').value.trim();
+            const v = document.getElementById('village').value.trim();
+
+            if (!d || !c || !v) return alert('Input required.');
+
+            try {
+                showSpinner(true);
+                const place = await db.getPlaceDetails(d, c, v);
+                _currentLoc = { d, c, v };
+                _currentPlaceData = place;
+
+                document.getElementById('locHeading').textContent = `📍 ${v} (${c}, ${d})`;
+                document.getElementById('locDesc').value = place.description || '';
+                document.getElementById('locBestTime').value = place.bestTime || '';
+
+                // Emergency
+                document.getElementById('ePolice').value = place.emergency?.police || '';
+                document.getElementById('eHospital').value = place.emergency?.hospital || '';
+                document.getElementById('eFire').value = place.emergency?.fire || '';
+
+                document.getElementById('mainLayout').style.display = 'grid';
+                showTab('details');
+            } catch (err) {
+                alert('Database connection failed.');
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // ── TAB MANAGEMENT ──────────────────────────────────────────────────
+        function showTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(p => p.style.display = 'none');
+
+            const btn = Array.from(document.querySelectorAll('.nav-item')).find(b => b.onclick.toString().includes(tabId));
+            if (btn) btn.classList.add('active');
+
+            if (['details', 'emergency', 'users'].includes(tabId)) {
+                document.getElementById(`tab-${tabId}`).style.display = 'block';
+                if (tabId === 'users') loadUsers();
+            } else {
+                setupCategoryManager(tabId);
+            }
+        }
+
+        function setupCategoryManager(tabKey) {
+            const config = CATEGORIES[tabKey];
+            const realKey = config.key || tabKey;
+            _activeCategory = realKey;
+
+            document.getElementById('catTitle').textContent = config.title;
+            const container = document.getElementById('addFormWrapper');
+
+            // Generate Form
+            container.innerHTML = `
+                <form onsubmit="handleCategoryAdd(event, '${realKey}')">
+                    <div class="grid-form">
+                        ${Object.entries(config.fields).map(([name, type]) => `
+                            <div class="form-group">
+                                <label style="text-transform: capitalize;">${name}</label>
+                                ${type === 'select' ?
+                    `<select name="${name}">${config.options[name].map(o => `<option value="${o}">${o}</option>`).join('')}</select>` :
+                    type === 'textarea' ?
+                        `<textarea name="${name}" rows="2"></textarea>` :
+                        `<input type="${type}" name="${name}">`
+                }
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Row to Base</button>
+                </form>
+            `;
+
+            renderDataList(realKey);
+            document.getElementById('categoryManager').style.display = 'block';
+        }
+
+        // ── DATA RENDERING ──────────────────────────────────────────────────
+        function renderDataList(key) {
+            const list = document.getElementById('categoryList');
+            const items = _currentPlaceData[key] || [];
+
+            if (items.length === 0) {
+                list.innerHTML = '<p style="color:#666; text-align:center;">No entries found for this category.</p>';
+                return;
+            }
+
+            list.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>${item.name || 'Unnamed Entry'}</h4>
+                        <p>${item.description ? item.description.substring(0, 100) + '...' : 'No description'}</p>
+                    </div>
+                    <div class="action-btns">
+                        <button class="icon-btn" onclick="openEdit('${key}', '${item._id}')">✏️</button>
+                        <button class="icon-btn delete" onclick="deleteEntry('${key}', '${item._id}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ── CRUD OPERATIONS ────────────────────────────────────────────────
+        async function handleCategoryAdd(e, key) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const item = {};
+            formData.forEach((val, k) => item[k] = val);
+
+            // If it's the "other" tab, the selected category overrides the global key
+            const targetKey = item.category || key;
+            if (item.category) delete item.category;
+
+            try {
+                showSpinner(true);
+                await db.addItem(_currentLoc.d, _currentLoc.c, _currentLoc.v, targetKey, item);
+                await refreshData();
+                e.target.reset();
+            } catch (err) { alert('Operation failed.'); }
+            finally { showSpinner(false); }
+        }
+
+        async function openEdit(category, id) {
+            const items = _currentPlaceData[category] || [];
+            const item = items.find(i => i._id === id);
+            if (!item) return;
+
+            _editState = { category, id };
+            const config = Object.values(CATEGORIES).find(c => (c.key || Object.keys(CATEGORIES).find(k => k === category)) === category);
+
+            document.getElementById('editModalBody').innerHTML = `
+                <div class="grid-form">
+                    ${Object.entries(config.fields).map(([name, type]) => `
+                        <div class="form-group">
+                            <label style="text-transform: capitalize;">${name}</label>
+                            ${type === 'textarea' ?
+                    `<textarea id="edit_${name}" rows="4">${item[name] || ''}</textarea>` :
+                    `<input type="${type}" id="edit_${name}" value="${item[name] || ''}">`
+                }
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        async function saveEntryEdit() {
+            const { category, id } = _editState;
+            const config = Object.values(CATEGORIES).find(c => (c.key || Object.keys(CATEGORIES).find(k => k === category)) === category);
+
+            const updates = {};
+            Object.keys(config.fields).forEach(f => {
+                const el = document.getElementById(`edit_${f}`);
+                if (el) updates[f] = el.value;
+            });
+
+            try {
+                showSpinner(true);
+                await db.updateItem(_currentLoc.d, _currentLoc.c, _currentLoc.v, category, id, updates);
+                await refreshData();
+                closeModal();
+            } catch (e) { alert('Update failed'); }
+            finally { showSpinner(false); }
+        }
+
+        async function deleteEntry(category, id) {
+            if (!confirm('Permanent delete?')) return;
+            try {
+                showSpinner(true);
+                await db.removeItem(_currentLoc.d, _currentLoc.c, _currentLoc.v, category, id);
+                await refreshData();
+            } catch (e) { alert('Delete failed'); }
+            finally { showSpinner(false); }
+        }
+
+        async function saveBaseDetails(e) {
+            e.preventDefault();
+            const data = {
+                description: document.getElementById('locDesc').value,
+                bestTime: document.getElementById('locBestTime').value
+            };
+            try {
+                showSpinner(true);
+                await db.savePlaceDetails(_currentLoc.d, _currentLoc.c, _currentLoc.v, data);
+                alert('Saved!');
+            } catch (e) { alert('Error'); }
+            finally { showSpinner(false); }
+        }
+
+        async function saveEmergency(e) {
+            e.preventDefault();
+            const data = {
+                police: document.getElementById('ePolice').value,
+                hospital: document.getElementById('eHospital').value,
+                fire: document.getElementById('eFire').value
+            };
+            try {
+                showSpinner(true);
+                await db.updateEmergencyContacts(_currentLoc.d, _currentLoc.c, _currentLoc.v, data);
+                alert('Contacts Updated!');
+            } catch (e) { alert('Error'); }
+            finally { showSpinner(false); }
+        }
+
+        // ── HELPERS ─────────────────────────────────────────────────────────
+        async function refreshData() {
+            _currentPlaceData = await db.getPlaceDetails(_currentLoc.d, _currentLoc.c, _currentLoc.v);
+            if (_activeCategory && !['details', 'emergency'].includes(_activeCategory)) {
+                renderDataList(_activeCategory);
+            }
+        }
+
+        function showSpinner(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        // ── USER MONITORING & CHAT ──────────────────────────────────────────
+        async function loadUsers() {
+            try {
+                const res = await api.getUsers();
+                if (res.success) {
+                    const container = document.getElementById('userList');
+                    container.innerHTML = res.users.map(u => {
+                        const loginDate = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never';
+                        return `
+                            <div class="user-card">
+                                <div class="user-meta">
+                                    <h4>${u.username} <span class="status-badge badge-active">${u.role}</span></h4>
+                                    <p>📧 ${u.email || 'No email'}</p>
+                                    <p>🕒 Last Login: ${loginDate}</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" 
+                                        onclick="openUserChat('${u._id}', '${u.username}')">Chat</button>
+                                    ${u.role !== 'main-admin' ? `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #d32f2f; color: white;" 
+                                        onclick="deleteUser('${u._id}', '${u.username}')">Delete</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteUser(userId, username) {
+            if (confirm(`Are you sure you want to delete user '${username}'? This action cannot be undone.`)) {
+                try {
+                    const res = await api.deleteUser(userId);
+                    if (res.success) {
+                        alert(res.message);
+                        loadUsers(); // Refresh the list
+                    } else {
+                        alert('Error deleting user: ' + res.message);
+                    }
+                } catch (error) {
+                    console.error('Delete user error:', error);
+                    alert('An error occurred while deleting the user.');
+                }
+            }
+        }
+
+        let _activeChatUser = null;
+        let _chatInterval = null;
+
+        async function openUserChat(userId, username) {
+            _activeChatUser = { id: userId, name: username };
+
+            document.getElementById('editModalBody').innerHTML = `
+                <div class="chat-container">
+                    <h3 style="color: #FFD700; margin-bottom: 0.5rem;">Chat with ${username}</h3>
+                    <div id="chatMessages" class="chat-messages">
+                        <p style="color: #666; text-align: center;">Loading history...</p>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                        <button class="btn btn-primary" onclick="sendChatMessage()">Send</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('editModal').style.display = 'flex';
+
+            // Polling for messages
+            await fetchMessages();
+            _chatInterval = setInterval(fetchMessages, 3000);
+        }
+
+        async function fetchMessages() {
+            if (!_activeChatUser) return;
+            try {
+                const res = await api.getMessages(_activeChatUser.id);
+                if (res.success) {
+                    const container = document.getElementById('chatMessages');
+                    const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+                    container.innerHTML = res.messages.map(m => `
+                        <div class="msg ${m.sender === _activeChatUser.id ? 'received' : 'sent'}">
+                            ${m.content}
+                        </div>
+                    `).join('');
+
+                    if (wasAtBottom) container.scrollTop = container.scrollHeight;
+                }
+            } catch (e) { }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const content = input.value.trim();
+            if (!content || !_activeChatUser) return;
+
+            try {
+                const res = await api.sendMessage(_activeChatUser.id, content);
+                if (res.success) {
+                    input.value = '';
+                    await fetchMessages();
+                }
+            } catch (e) { alert('Message failed'); }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            if (_chatInterval) clearInterval(_chatInterval);
+            _activeChatUser = null;
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login-main-admin.html';
+        }
+    </script>
+</body>
+
+</html>

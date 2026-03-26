@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General User Dashboard - Local Tourism Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(180deg, #0a1628 0%, #0d2545 30%, #0d3320 70%, #1a2e0d 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+            background-size: 80px 80px;
+            animation: starTwinkle 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes starTwinkle {
+            0% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 0.7;
+            }
+        }
+
+        .bg-aurora {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40vh;
+            background: linear-gradient(180deg,
+                    rgba(0, 200, 100, 0.06) 0%,
+                    rgba(0, 150, 200, 0.04) 50%,
+                    transparent 100%);
+            animation: auroraShift 8s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes auroraShift {
+            0% {
+                transform: translateX(-5%) scaleX(1.1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateX(5%) scaleX(0.9);
+                opacity: 1;
+            }
+        }
+
+        .bg-mountain {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 35vh;
+            background: linear-gradient(180deg, transparent 0%, rgba(10, 30, 15, 0.8) 100%);
+            clip-path: polygon(0% 100%, 0% 60%, 8% 40%, 15% 55%, 22% 30%, 30% 50%, 38% 20%, 46% 45%, 54% 15%, 62% 40%, 70% 25%, 78% 45%, 85% 30%, 92% 50%, 100% 35%, 100% 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .firefly {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(100, 255, 150, 0.8);
+            box-shadow: 0 0 6px rgba(100, 255, 150, 0.6);
+            animation: fireflyFloat var(--dur, 6s) ease-in-out infinite alternate;
+            animation-delay: var(--delay, 0s);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes fireflyFloat {
+            0% {
+                transform: translate(0, 0);
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx, 30px), var(--ty, -40px));
+                opacity: 0.3;
+            }
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(126, 200, 164, 0.3);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #555;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid white;
+        }
+
+        .spots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .spot-card {
+            background: #222;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .spot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .spot-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .spot-card p {
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .book-btn {
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .book-btn:hover {
+            background: #555;
+        }
+
+        .bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .booking-item {
+            background: #222;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-info h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .booking-info p {
+            color: #ccc;
+        }
+
+        /* Location Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 2px solid white;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .modal-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .modal-header p {
+            color: #aaa;
+        }
+
+        .location-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            color: white;
+            font-weight: 500;
+            margin-left: 0.2rem;
+        }
+
+        .form-group input {
+            padding: 1rem;
+            background: #333;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: white;
+            background: #444;
+            outline: none;
+        }
+
+        .submit-btn {
+            background: white;
+            color: black;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Navigation Tabs */
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 1rem;
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab.active {
+            color: white;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: white;
+        }
+
+        .nav-tab:hover {
+            color: white;
+        }
+
+        /* Wanna Go Grid */
+        .wanna-go-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .wg-card {
+            background: #222;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .wg-card:hover {
+            transform: translateY(-5px);
+            background: #333;
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        .wg-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .wg-card p {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        /* Floating Chat Widget */
+        #chatBubble {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: #000;
+            border: 2px solid #7ec8a4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #chatBubble:hover {
+            transform: scale(1.1);
+            background: #111;
+        }
+
+        #chatWindow {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 350px;
+            height: 480px;
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(126, 200, 164, 0.3);
+            border-radius: 16px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-header {
+            background: rgba(126, 200, 164, 0.1);
+            padding: 1rem;
+            border-bottom: 1px solid rgba(126, 200, 164, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .chat-msg {
+            max-width: 80%;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .chat-msg.sent {
+            align-self: flex-end;
+            background: #7ec8a4;
+            color: #000;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-msg.received {
+            align-self: flex-start;
+            background: #2a2a2a;
+            color: #fff;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .chat-footer button {
+            background: #7ec8a4;
+            border: none;
+            color: #000;
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .wg-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Sub-feature Sections */
+        .feature-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Budget Calculator */
+        .budget-form {
+            display: grid;
+            gap: 1rem;
+            max-width: 500px;
+        }
+    </style>
+    <script src="db.js"></script>
+</head>
+
+<body>
+    <!-- Tourism Animated Background -->
+    <div class="bg-stars"></div>
+    <div class="bg-aurora"></div>
+    <div class="bg-mountain"></div>
+    <!-- Emergency Copy Toast -->
+    <div id="emergencyToast" style="
+        position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+        background: #222; color: white; padding: 0.75rem 1.5rem;
+        border-radius: 50px; border: 1px solid #444;
+        font-size: 0.95rem; font-weight: 600;
+        opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 9999; pointer-events: none; white-space: nowrap;
+    "></div>
+    <script>
+        // Spawn fireflies
+        for (let i = 0; i < 18; i++) {
+            const f = document.createElement('div');
+            f.className = 'firefly';
+            f.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 80}%;--dur:${4 + Math.random() * 6}s;--delay:${Math.random() * 4}s;--tx:${(Math.random() - 0.5) * 80}px;--ty:${-(20 + Math.random() * 60)}px;`;
+            document.body.appendChild(f);
+        }
+    </script>
+    <!-- Location Selection Modal -->
+    <div id="locationModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Location</h2>
+                <p>Please enter your location details to continue</p>
+            </div>
+            <form id="locationForm" class="location-form" onsubmit="handleLocationSubmit(event)">
+                <div class="form-group">
+                    <label for="district">District</label>
+                    <input type="text" id="district" required placeholder="e.g. Ernakulam" list="districtList">
+                    <datalist id="districtList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" required placeholder="e.g. Kochi" list="cityList">
+                    <datalist id="cityList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="village">Village</label>
+                    <input type="text" id="village" required placeholder="e.g. Kakkanad" list="villageList">
+                    <datalist id="villageList"></datalist>
+                </div>
+
+                <div id="quickSelectContainer"
+                    style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #444;">
+                    <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 0.5rem;">Available Locations In Database:
+                    </p>
+                    <div id="quickSelectButtons"
+                        style="display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 150px; overflow-y: auto; padding-right: 5px;">
+                        <!-- Buttons will be added here -->
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" style="margin-top: 1.5rem;">Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <header>
+        <h1>General User Dashboard</h1>
+        <div class="user-info">
+            <span>Welcome, <strong id="username">User</strong></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Location Info Bar (hidden by default, shown after selection) -->
+        <div id="locationInfoBar" class="section"
+            style="display: none; background: rgba(0,0,0,0.6); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p
+                            style="margin: 0; color: #7ec8a4; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                            Current Location</p>
+                        <h3 style="margin: 0.2rem 0 0 0; font-size: 1.8rem; font-family: 'Playfair Display', serif;"
+                            id="locationDisplay">Loading...</h3>
+                    </div>
+                    <button onclick="changeLocation()"
+                        style="background: transparent; border: 1px solid #7ec8a4; color: #7ec8a4; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; font-weight: 600;"
+                        onmouseover="this.style.background='#7ec8a4'; this.style.color='black';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#7ec8a4';">
+                        Change Location
+                    </button>
+                </div>
+
+                <div id="locationMetaInfo"
+                    style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; display: none;">
+                    <p id="locationDescription"
+                        style="color: #ddd; line-height: 1.6; margin-bottom: 0.8rem; font-size: 1.05rem; font-style: italic;">
+                    </p>
+                    <div id="locationBestTime"
+                        style="display: inline-block; background: rgba(126, 200, 164, 0.15); color: #7ec8a4; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600;">
+                        ✨ Best time to visit: <span id="bestTimeValue"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainNavigation" style="display: none;">
+            <div class="main-nav">
+                <button class="nav-tab active" id="tabButtonLetsGo" onclick="switchTab('letsgo')">Let's Go</button>
+            </div>
+
+            <!-- TAB: LET'S GO -->
+            <div id="tab-letsgo" class="tab-content">
+                <!-- Main Menu Grid -->
+                <div id="letsGoMenu" class="wanna-go-grid">
+                    <div class="wg-card" onclick="showFeature('hotel')">
+                        <div class="wg-icon">🏨</div>
+                        <h3>Hotel Booking</h3>
+                        <p>Find the best stays nearby</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('food')">
+                        <div class="wg-icon">🍽️</div>
+                        <h3>Food</h3>
+                        <p>Explore local cuisine</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('transport')">
+                        <div class="wg-icon">🚕</div>
+                        <h3>Transport</h3>
+                        <p>Cabs, buses & routes</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('budget')">
+                        <div class="wg-icon">💰</div>
+                        <h3>Budget Calculator</h3>
+                        <p>Plan your expenses</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('events')">
+                        <div class="wg-icon">🎉</div>
+                        <h3>Event Happening</h3>
+                        <p>What's on this week</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('emergency')">
+                        <div class="wg-icon">🚨</div>
+                        <h3>Emergency</h3>
+                        <p>Police, Hospital, Fire</p>
+                    </div>
+
+                    <div class="wg-card" onclick="redirectToGoogleTranslate()">
+                        <div class="wg-icon">🌐</div>
+                        <h3>Translator</h3>
+                        <p>Google Translate</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('medical')">
+                        <div class="wg-icon">🏥</div>
+                        <h3>Medical</h3>
+                        <p>Hospitals &amp; pharmacies</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('banks')">
+                        <div class="wg-icon">🏦</div>
+                        <h3>Banks &amp; ATMs</h3>
+                        <p>Nearby banks &amp; cash points</p>
+                    </div>
+                    <div class="wg-card" onclick="redirectToGoogleMaps()">
+                        <div class="wg-icon">📍</div>
+                        <h3>Google Maps</h3>
+                        <p>Find via Google Maps</p>
+                    </div>
+                    <div class="wg-card" onclick="showFeature('touristspots')">
+                        <div class="wg-icon">📸</div>
+                        <h3>Tourist Spots</h3>
+                        <p>Must-visit attractions</p>
+                    </div>
+
+                    <div class="wg-card" onclick="showFeature('fuel')">
+                        <div class="wg-icon">⛽</div>
+                        <h3>Fuel Station</h3>
+                        <p>Petrol, EV & CNG</p>
+                    </div>
+                </div>
+
+                <!-- Feature Sections (Hidden by default) -->
+                <div id="feature-hotel" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>Hotel Booking</h2>
+                    <p>Hotels available in <span class="current-village">this area</span>:</p>
+                    <div id="container-hotels" class="spots-grid" style="margin-top: 1.5rem;">
+                        <!-- Dynamic Content -->
+                    </div>
+                </div>
+
+                <div id="feature-food" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>Food & Dining</h2>
+                    <p>Top rated restaurants near <span class="current-village">this area</span>:</p>
+                    <div id="container-food" class="spots-grid" style="margin-top: 1.5rem;">
+                        <!-- Dynamic Content -->
+                    </div>
+                </div>
+
+                <div id="feature-transport" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>Local Transport</h2>
+                    <div class="admin-card"
+                        style="margin-bottom: 1.5rem; border: 2px solid #e87722; border-radius: 10px; padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h4 style="margin: 0 0 0.3rem 0;">🚌 Kerala KSRTC – Official Bus Service</h4>
+                            <p style="margin: 0; color: #aaa; font-size: 0.9rem;">Book bus tickets, check routes &
+                                timings on the official KSRTC portal</p>
+                        </div>
+                        <button onclick="window.open('https://www.keralartc.com', '_blank')"
+                            style="background: #e87722; color: white; border: none; padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; white-space: nowrap;">
+                            Visit KSRTC Site →
+                        </button>
+                    </div>
+                    <div class="admin-card"
+                        style="margin-bottom: 1.5rem; border: 2px solid #1565c0; border-radius: 10px; padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h4 style="margin: 0 0 0.3rem 0;">🚂 Indian Railways – IRCTC Train Booking</h4>
+                            <p style="margin: 0; color: #aaa; font-size: 0.9rem;">Book train tickets, check PNR status
+                                &amp;
+                                train schedules on the official IRCTC portal (PC supported)</p>
+                        </div>
+                        <button onclick="window.open('https://www.irctc.co.in', '_blank')"
+                            style="background: #1565c0; color: white; border: none; padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; white-space: nowrap;">
+                            Book on IRCTC →
+                        </button>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3>Local Transport Options</h3>
+                        <div id="container-transport" class="spots-grid" style="margin-top: 1rem;">
+                            <!-- Dynamic Content from Backend -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feature-budget" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>Budget Calculator</h2>
+
+                    <!-- Booked Items Summary -->
+                    <div class="admin-card" style="margin-bottom: 2rem; background: #2a2a2a;">
+                        <h3>My Booked Items</h3>
+                        <div id="bookedItemsList" style="margin: 1rem 0; color: #ccc;">
+                            <p>No items added yet.</p>
+                        </div>
+                        <h4 style="border-top: 1px solid #444; padding-top: 1rem;">Booked Total: ₹<span
+                                id="bookedTotal">0</span></h4>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3>Estimate Additional Costs</h3>
+                        <div class="budget-form">
+                            <div class="form-group">
+                                <label>Number of Days</label>
+                                <input type="number" id="days" value="1" min="1" onchange="calculateBudget()">
+                            </div>
+                            <div class="form-group">
+                                <label>Number of People</label>
+                                <input type="number" id="people" value="1" min="1" onchange="calculateBudget()">
+                            </div>
+                            <div class="form-group">
+                                <label>Additional Expenses (₹)</label>
+                                <input type="number" id="additionalExpenses" value="0" min="0"
+                                    placeholder="Food, transport, misc." onchange="calculateBudget()">
+                            </div>
+                            <button class="btn btn-primary" onclick="calculateBudget()"
+                                style="background: #444; color: white; padding: 1rem; border: none; border-radius: 8px; cursor: pointer;">Calculate
+                                Budget</button>
+                        </div>
+                        <div id="budgetResult"
+                            style="margin-top: 1.5rem; padding: 1.5rem; background: #333; border-radius: 8px; display: none;">
+                            <h3 style="margin-bottom: 1rem;">Budget Summary</h3>
+                            <div style="display: grid; gap: 0.75rem; font-size: 1.1rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #444;">
+                                    <span>Total Cost:</span>
+                                    <span style="color: #4CAF50; font-weight: bold;">₹<span
+                                            id="totalCost">0</span></span>
+                                </div>
+                                <div
+                                    style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #444;">
+                                    <span>Number of People:</span>
+                                    <span style="font-weight: bold;"><span id="displayPeople">1</span></span>
+                                </div>
+                                <div
+                                    style="display: flex; justify-content: space-between; padding: 0.75rem; background: #2a2a2a; border-radius: 8px; margin-top: 0.5rem;">
+                                    <span style="font-size: 1.2rem; font-weight: bold;">Cost Per Person:</span>
+                                    <span style="color: #FFD700; font-size: 1.3rem; font-weight: bold;">₹<span
+                                            id="costPerPerson">0</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feature-transport" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>🚕 Transport Services</h2>
+                    <p>Cabs, buses & routes in <span class="current-village">this area</span>:</p>
+                    <div id="container-transport" class="spots-grid" style="margin-top: 1.5rem;">
+                        <!-- Dynamic Content -->
+                    </div>
+                </div>
+
+                <div id="feature-events" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>Events Happening</h2>
+                    <p>Upcoming events in <span class="current-village">this area</span>:</p>
+                    <div id="container-events" class="spots-grid" style="margin-top: 1.5rem;">
+                        <!-- Dynamic Content -->
+                    </div>
+                </div>
+
+                <div id="feature-emergency" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>Emergency Contacts</h2>
+                    <p>Important numbers for <span class="current-village">this area</span>:</p>
+                    <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 1rem;">📞 Tap a number to call &amp; copy
+                        it to clipboard</p>
+                    <div class="spots-grid" style="margin-top: 0.5rem;">
+                        <div class="spot-card" style="border-left: 5px solid #d32f2f;">
+                            <h3>👮‍♂️ Police Station</h3>
+                            <div id="displayPolice" style="font-size: 1.2rem; font-weight: bold;">Not Available</div>
+                        </div>
+                        <div class="spot-card" style="border-left: 5px solid #d32f2f;">
+                            <h3>🏥 Hospital</h3>
+                            <div id="displayHospital" style="font-size: 1.2rem; font-weight: bold;">Not Available</div>
+                        </div>
+                        <div class="spot-card" style="border-left: 5px solid #d32f2f;">
+                            <h3>🚒 Fire Force</h3>
+                            <div id="displayFire" style="font-size: 1.2rem; font-weight: bold;">Not Available</div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div id="feature-touristspots" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>📸 Tourist Spots</h2>
+                    <p>Must-visit locations in <span class="current-village">this area</span>:</p>
+                    <div id="container-touristspots" class="spots-grid" style="margin-top: 1.5rem;"></div>
+                </div>
+
+
+
+                <div id="feature-medical" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>🏥 Medical &amp; Pharmacy</h2>
+                    <p>Hospitals, clinics &amp; pharmacies near <span class="current-village">this area</span>:</p>
+                    <div id="container-medical" class="spots-grid" style="margin-top: 1.5rem;"></div>
+                </div>
+
+                <div id="feature-banks" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>🏦 Banks &amp; ATMs</h2>
+                    <p>Nearby banks &amp; ATMs in <span class="current-village">this area</span>:</p>
+                    <div id="container-banks" class="spots-grid" style="margin-top: 1.5rem;"></div>
+                </div>
+
+                <div id="feature-fuel" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>⛽ Fuel & EV Charging</h2>
+                    <p>Petrol pumps and EV charging stations near <span class="current-village">this area</span>:</p>
+                    <div id="container-fuel" class="spots-grid" style="margin-top: 1.5rem;"></div>
+                </div>
+
+                <div id="feature-weather" class="feature-section" style="display: none;">
+                    <button class="back-btn" onclick="showLetsGoMenu()">← Back to Menu</button>
+                    <h2>🌦️ Weather Update</h2>
+                    <div id="weather-container" style="color: white; padding: 20px; text-align: center;">
+                        <p>Fetching real-time weather data...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Widget -->
+            <div id="chatBubble" onclick="toggleChat()">💬</div>
+            <div id="chatWindow">
+                <div class="chat-header">
+                    <span style="font-weight: bold; color: #7ec8a4;">Chat with Admin</span>
+                    <button onclick="toggleChat()"
+                        style="background:none; border:none; color:#aaa; cursor:pointer; font-size:1.2rem;">×</button>
+                </div>
+                <div id="userChatMessages" class="chat-messages">
+                    <p style="text-align:center; color:#666; font-size:0.8rem;">Start a conversation with our support
+                        team.</p>
+                </div>
+                <div class="chat-footer">
+                    <input type="text" id="userChatInput" placeholder="Type a message..."
+                        onkeypress="if(event.key==='Enter') sendUserMessage()">
+                    <button onclick="sendUserMessage()">Send</button>
+                </div>
+            </div>
+
+            <script>
+                // Get username from localStorage
+                const usernameData = localStorage.getItem('username') || 'User';
+                document.getElementById('username').textContent = usernameData;
+
+                // Load bookings from localStorage
+                function loadBookings() {
+                    const bookingsList = document.getElementById('bookingsList');
+                    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+
+                    if (bookings.length === 0) {
+                        bookingsList.innerHTML = `
+                        <div class="booking-item">
+                            <div class="booking-info">
+                                <h3>No bookings yet</h3>
+                                <p>Book a spot to see your reservations here</p>
+                            </div>
+                        </div>`;
+                    } else {
+                        bookingsList.innerHTML = bookings.map((booking, index) => `
+                        <div class="booking-item">
+                            <div class="booking-info">
+                                <h3>${booking.spot}</h3>
+                                <p>Booked on: ${booking.date}</p>
+                            </div>
+                            <button onclick="cancelBooking(${index})" class="logout-btn" style="border-color: #ff5555; color: #ff5555; padding: 0.3rem 0.8rem; font-size: 0.8rem;">Cancel</button>
+                        </div>`).join('');
+                    }
+                }
+
+                function cancelBooking(index) {
+                    if (confirm('Are you sure you want to cancel this booking?')) {
+                        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                        bookings.splice(index, 1);
+                        localStorage.setItem('bookings', JSON.stringify(bookings));
+                        loadBookings();
+                    }
+                }
+
+                function bookSpot(spotName) {
+                    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                    const newBooking = {
+                        spot: spotName,
+                        date: new Date().toLocaleDateString()
+                    };
+                    bookings.push(newBooking);
+                    localStorage.setItem('bookings', JSON.stringify(bookings));
+                    loadBookings();
+                    alert(`Successfully booked ${spotName}!`);
+                }
+
+                async function logout() {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }
+
+                // ── CHAT SYSTEM ─────────────────────────────────────────────────────
+                let _adminId = null;
+                let _userChatInterval = null;
+
+                async function toggleChat() {
+                    const win = document.getElementById('chatWindow');
+                    if (win.style.display === 'flex') {
+                        win.style.display = 'none';
+                        if (_userChatInterval) clearInterval(_userChatInterval);
+                    } else {
+                        win.style.display = 'flex';
+                        if (!_adminId) {
+                            const res = await api.getMainAdminId();
+                            if (res.success) _adminId = res.admin._id;
+                        }
+                        await fetchUserMessages();
+                        _userChatInterval = setInterval(fetchUserMessages, 3000);
+                    }
+                }
+
+                async function fetchUserMessages() {
+                    if (!_adminId) return;
+                    try {
+                        const res = await api.getMessages(_adminId);
+                        if (res.success) {
+                            const container = document.getElementById('userChatMessages');
+                            const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+                            container.innerHTML = res.messages.map(m => `
+                                <div class="chat-msg ${m.sender === _adminId ? 'received' : 'sent'}">
+                                    ${m.content}
+                                </div>`).join('');
+
+                            if (wasAtBottom) container.scrollTop = container.scrollHeight;
+                        }
+                    } catch (e) { }
+                }
+
+                async function sendUserMessage() {
+                    const input = document.getElementById('userChatInput');
+                    const content = input.value.trim();
+                    if (!content || !_adminId) return;
+
+                    try {
+                        const res = await api.sendMessage(_adminId, content);
+                        if (res.success) {
+                            input.value = '';
+                            await fetchUserMessages();
+                        }
+                    } catch (e) { alert('Message failed'); }
+                }
+                // Location handling
+                async function checkLocation() {
+                    const locationData = localStorage.getItem('userLocation');
+                    const modal = document.getElementById('locationModal');
+                    const infoBar = document.getElementById('locationInfoBar');
+
+                    if (locationData) {
+                        modal.style.display = 'none';
+                        const loc = JSON.parse(locationData);
+                        infoBar.style.display = 'block';
+                        document.getElementById('locationDisplay').textContent = `${loc.village}, ${loc.city}, ${loc.district}`;
+
+                        // Show Main Navigation
+                        document.getElementById('mainNavigation').style.display = 'block';
+                        modal.style.display = 'none'; // Ensure modal is hidden
+
+                        // Update feature texts
+                        updateLocationDisplays(loc);
+
+                        try {
+                            // Load details from DB
+                            const details = await db.getPlaceDetails(loc.district, loc.city, loc.village);
+
+                            if (details) {
+                                // NEW: Render Dynamic Content
+                                renderDynamicSection('hotels', details.hotels || []);
+                                renderDynamicSection('food', details.food || []);
+                                renderTransport(details.transport || []);
+                                renderDynamicSection('events', details.events || []);
+                                renderDynamicSection('touristspots', details.touristspots || []);
+                                renderDynamicSection('medical', details.medical || []);
+                                renderDynamicSection('banks', details.banks || []);
+                                renderDynamicSection('fuel', details.fuelStations || []);
+
+                                // NEW: Update Meta Info (Description & Best Time)
+                                const metaPanel = document.getElementById('locationMetaInfo');
+                                if (details.description || details.bestTime) {
+                                    metaPanel.style.display = 'block';
+                                    document.getElementById('locationDescription').textContent = details.description || 'No description available for this location yet.';
+
+                                    const bestTimeElem = document.getElementById('locationBestTime');
+                                    if (details.bestTime) {
+                                        bestTimeElem.style.display = 'inline-block';
+                                        document.getElementById('bestTimeValue').textContent = details.bestTime;
+                                    } else {
+                                        bestTimeElem.style.display = 'none';
+                                    }
+                                } else {
+                                    metaPanel.style.display = 'none';
+                                }
+
+                                // Render Emergency Numbers
+                                if (details.emergency) {
+                                    setEmergencyNumber('displayPolice', details.emergency.police);
+                                    setEmergencyNumber('displayHospital', details.emergency.hospital);
+                                    setEmergencyNumber('displayFire', details.emergency.fire);
+                                } else {
+                                    setEmergencyNumber('displayPolice', null);
+                                    setEmergencyNumber('displayHospital', null);
+                                    setEmergencyNumber('displayFire', null);
+                                }
+
+                            } else {
+                                // Clear sections
+                                renderDynamicSection('hotels', []);
+                                renderDynamicSection('food', []);
+                                renderTransport([]);
+                                renderDynamicSection('events', []);
+                                renderDynamicSection('touristspots', []);
+                                renderDynamicSection('shopping', []);
+                                renderDynamicSection('medical', []);
+                                renderDynamicSection('banks', []);
+                                renderDynamicSection('parking', []);
+                                renderDynamicSection('fuel', []);
+
+                                setEmergencyNumber('displayPolice', null);
+                                setEmergencyNumber('displayHospital', null);
+                                setEmergencyNumber('displayFire', null);
+                            }
+
+                            // Default to Let's Go tab
+                            switchTab('letsgo');
+                        } catch (error) {
+                            console.error('Error loading place details:', error);
+                            // Even on error, show the navigation
+                            switchTab('letsgo');
+                        }
+                    } else {
+                        modal.style.display = 'flex';
+                        infoBar.style.display = 'none';
+                    }
+                }
+
+                // ── Emergency helpers ──────────────────────────────────────────────
+                function setEmergencyNumber(elemId, number) {
+                    const el = document.getElementById(elemId);
+                    if (!el) return;
+                    if (!number || number === 'Not Available') {
+                        el.innerHTML = '<span style="color:#aaa;">Not Available</span>';
+                        return;
+                    }
+                    el.innerHTML = `
+            <a href="tel:${number}" onclick="callEmergency(event, '${number}')" style="color:#ff5c5c; text-decoration:none; font-size:1.3rem; font-weight:bold;
+                          display:inline-flex; align-items:center; gap:0.5rem;
+                          border:2px solid #d32f2f; border-radius:8px;
+                          padding:0.4rem 0.8rem; margin-top:0.3rem;
+                          transition:background 0.2s;">
+                📞 ${number}
+                <span style="font-size:0.75rem; color:#aaa;">(tap to call)</span>
+            </a>`;
+                }
+
+                function callEmergency(event, number) {
+                    // Copy to clipboard
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(number).then(() => showToast(`📋 ${number} copied!`));
+                    } else {
+                        // Fallback for older browsers
+                        const ta = document.createElement('textarea');
+                        ta.value = number;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        showToast(`📋 ${number} copied!`);
+                    }
+                    // tel: link proceeds normally (event not prevented)
+                }
+
+                function showToast(msg) {
+                    const toast = document.getElementById('emergencyToast');
+                    toast.textContent = msg;
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateY(20px)';
+                    }, 2500);
+                }
+                // ──────────────────────────────────────────────────────────────────
+
+                function renderDynamicSection(type, items) {
+                    const container = document.getElementById(`container-${type}`);
+                    if (!container) return;
+
+                    // Filter items by 10km radius for hotels and food (and others)
+                    const filteredItems = items.filter(item => {
+                        if (item.distance === undefined || item.distance === null) return true; // Show if distance is unknown
+                        return item.distance <= 10;
+                    });
+
+                    if (filteredItems.length === 0) {
+                        container.innerHTML = `<p style="color: #aaa; grid-column: 1/-1;">No ${type} found within 10km.</p>`;
+                        return;
+                    }
+
+                    // Special handling for hotels - add days selector
+                    if (type === 'hotels') {
+                        container.innerHTML = filteredItems.map(item => `
+            <div class="spot-card">
+                <h3>${item.name || 'Unnamed'}</h3>
+                ${item.description ? `<p>${item.description}</p>` : ''}
+                <p style="color: #4CAF50; font-weight: bold; margin: 0.5rem 0;">${item.price != null ? '₹' + item.price
+                                + '/night' : 'Price not listed'}</p>
+                ${item.distance != null ? `<p style="color:#64b5f6; font-size:0.85rem; margin:0.3rem 0;">📍
+                    ${item.distance} km away</p>` : ''}
+                <div style="margin: 0.75rem 0;">
+                    <label style="display: block; margin-bottom: 0.3rem; font-size: 0.9rem;">Number of Days:</label>
+                    <input type="number" id="days-${item._id || item.name.replace(/\s/g, '')}" value="1" min="1"
+                        style="width: 100%; padding: 0.5rem; background: #444; border: 1px solid #666; border-radius: 4px; color: white;"
+                        onchange="updateHotelPrice('${item._id || item.name.replace(/\s/g, '')}', ${item.price || 0})">
+                </div>
+                <p style="color: #FFD700; font-weight: bold; margin: 0.5rem 0;">Total: ₹<span
+                        id="total-${item._id || item.name.replace(/\s/g, '')}">${item.price || 0}</span></p>
+                ${item.bookingLink ? `
+                <a href="${item.bookingLink}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: #1565c0; color: white;
+                                   text-decoration: none; padding: 0.6rem 1rem; border-radius: 8px;
+                                   font-weight: bold; margin-bottom: 0.5rem; transition: background 0.2s;"
+                    onmouseover="this.style.background='#1976d2'" onmouseout="this.style.background='#1565c0'">
+                    🌐 Book Online →
+                </a>` : ''}
+                <button class="book-btn" style="background:#444; border:1px solid #666; margin-bottom:0.5rem;"
+                    onclick="openInGoogleMaps('${item.name.replace(/'/g, " \\'")}')">📍 View on Maps</button>
+                <button class="book-btn" onclick='addHotelToBudget(${JSON.stringify(item).replace(/\x27/g, "&#39;")})'>Book / Add to Plan</button>
+            </div>
+            `).join('');
+                        return;
+                    }
+
+                    // Special handling for food - group by hotel
+                    if (type === 'food') {
+
+                        // Group food items by hotel name
+                        const groupedByHotel = {};
+                        filteredItems.forEach(item => {
+                            const hotelName = item.hotelName || 'Other Restaurants';
+                            if (!groupedByHotel[hotelName]) {
+                                groupedByHotel[hotelName] = [];
+                            }
+                            groupedByHotel[hotelName].push(item);
+                        });
+
+
+                        // Render grouped by hotel
+                        container.innerHTML = Object.keys(groupedByHotel).map(hotelName => `
+            <div style="grid-column: 1/-1; margin-bottom: 1.5rem;">
+                <h3 style="color: #FFD700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #444;">
+                    🏨 ${hotelName}
+                </h3>
+                <div class="spots-grid">
+                    ${groupedByHotel[hotelName].map(item => `
+                    <div class="spot-card">
+                        <h3>${item.name || 'Unnamed'}</h3>
+                        ${item.description ? `<p>${item.description}</p>` : ''}
+                        <p style="color: #4CAF50; font-weight: bold; margin: 0.5rem 0;">${item.price != null ? '₹' +
+                                item.price : 'Free'}</p>
+                        ${item.distance != null ? `<p style="color:#64b5f6; font-size:0.85rem; margin:0.3rem 0;">📍
+                            ${item.distance} km away</p>` : ''}
+                        <button class="book-btn"
+                            style="background:#444; border:1px solid #666; margin-bottom:0.5rem; width:100%;"
+                            onclick="openInGoogleMaps('${item.name.replace(/'/g, " \\'")}')">📍 View on Maps</button>
+                        <button class="book-btn" onclick='addToBudget(${JSON.stringify(item).replace(/\x27/g, "&#39;")})'>Add to Plan</button>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `).join('');
+
+                        return;
+                    }
+
+                    // Special handling for fuel - show type (Petrol/EV)
+                    if (type === 'fuel') {
+                        container.innerHTML = filteredItems.map(item => `
+            <div class="spot-card"
+                style="border-left: 5px solid ${item.type && item.type.includes('EV') ? '#4CAF50' : '#ff5252'};">
+                <h3>${item.name || 'Unnamed Station'}</h3>
+                <p style="color: #FFD700; font-weight: bold; margin: 0.3rem 0;">⚡ Type: ${item.type || 'Not Specified'}
+                </p>
+                ${item.description ? `<p>${item.description}</p>` : ''}
+                ${item.distance != null ? `<p style="color:#64b5f6; font-size:0.85rem; margin:0.3rem 0;">📍
+                    ${item.distance} km away</p>` : ''}
+                ${item.address ? `<p style="font-size:0.8rem; color:#aaa; margin-top:0.3rem;">🏠 ${item.address}</p>` :
+                                ''}
+                <button class="book-btn" style="background:#444; border:1px solid #666; margin-top:0.8rem;"
+                    onclick="openInGoogleMaps('${item.name.replace(/'/g, " \\'")}')">📍 View on Maps</button>
+            </div>
+            `).join('');
+                        return;
+                    }
+
+                    // Special handling for events - show timings and venue
+                    if (type === 'events') {
+                        container.innerHTML = filteredItems.map(item => `
+            <div class="spot-card" style="border-left: 5px solid #FFD700;">
+                <span
+                    style="background: #FFD700; color: #000; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">
+                    Cultural Event
+                </span>
+                <h3 style="margin: 0.8rem 0 0.4rem 0;">${item.name || 'Unnamed'}</h3>
+                ${item.description ? `<p style="color: #ddd; margin-bottom: 0.8rem;">${item.description}</p>` : ''}
+
+                <div style="background: rgba(255, 215, 0, 0.1); padding: 0.8rem; border-radius: 8px; margin: 1rem 0;">
+                    ${item.timing ? `<p
+                        style="color: #FFD700; font-weight: bold; font-size: 0.9rem; margin-bottom: 0.3rem;">🕒
+                        ${item.timing}</p>` : ''}
+                    ${item.venue ? `<p style="color: #aaa; font-size: 0.85rem;">📍 ${item.venue}</p>` : ''}
+                </div>
+
+                ${item.price != null && item.price > 0 ? `<p
+                    style="color: #4CAF50; font-weight: bold; margin: 0.5rem 0;">Entry: ₹${item.price}</p>` : ''}
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="book-btn" style="background:#444; border:1px solid #666; flex: 1;"
+                        onclick="openInGoogleMaps('${(item.venue || item.name).replace(/'/g, " \\'")}')">📍 View
+                        Maps</button>
+                    <button class="book-btn" style="flex: 1.5;" onclick='addToBudget(${JSON.stringify(item).replace(/\x27/g, "&#39;")})'>Add to
+                        Plan</button>
+                </div>
+            </div>
+            `).join('');
+                        return;
+                    }
+
+                    // Default rendering for other types (touristspots, shopping, medical, banks)
+                    container.innerHTML = filteredItems.map(item => `
+            <div class="spot-card">
+                <h3>${item.name || 'Unnamed'}</h3>
+                ${item.description ? `<p>${item.description}</p>` : ''}
+                <p style="color: #4CAF50; font-weight: bold; margin: 0.5rem 0;">
+                    ${item.price === 'Free' || item.price === '0' || !item.price ? 'Free Entry' : '₹' + item.price}
+                </p>
+                ${item.distance != null ? `<p style="color:#64b5f6; font-size:0.85rem; margin:0.3rem 0;">📍
+                    ${item.distance} km away</p>` : ''}
+                <button class="book-btn" style="background:#444; border:1px solid #666; margin-top:0.5rem; width:100%;"
+                    onclick="openInGoogleMaps('${item.name.replace(/'/g, "\\'")}')">📍 View on Maps</button>
+                ${['hotels', 'food', 'events', 'shopping', 'touristspots'].includes(type) ?
+                            `<button class="book-btn" style="margin-top:0.5rem;" onclick='addToBudget(${JSON.stringify(item).replace(/\x27/g, "&#39;")})'>Book
+                    / Add to Plan</button>` :
+                            `<div style="margin-top: 1rem; color: #aaa; font-size: 0.8rem; font-style: italic;">Information only
+                </div>`
+                        }
+            </div>
+            `).join('');
+                }
+
+                function renderTransport(items) {
+                    const container = document.getElementById('container-transport');
+                    if (!container) return;
+
+                    const filteredItems = items.filter(item => {
+                        if (item.distance === undefined || item.distance === null) return true;
+                        return item.distance <= 10;
+                    });
+
+                    if (filteredItems.length === 0) {
+                        container.innerHTML = '<p style="color: #aaa; grid-column: 1/-1;">No transport options found within 10km.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = filteredItems.map(item => `
+            <div class="spot-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span
+                            style="background: #444; color: #FFD700; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">
+                            ${item.type || 'Transport'}
+                        </span>
+                        ${item.distance ? `<span style="color: #64b5f6; font-size: 0.8rem;">📍 ${item.distance}
+                            km</span>` : ''}
+                    </div>
+                    <h3 style="margin: 0.8rem 0 0.4rem 0;">${item.name}</h3>
+                    ${item.route ? `<p style="color: #ddd; font-size: 0.95rem; margin-bottom: 0.8rem;">🛣️ ${item.route}
+                    </p>` : ''}
+                    ${item.contact ? `<p style="color: #aaa; font-size: 0.85rem; margin-bottom: 0.5rem;">📞
+                        ${item.contact}</p>` : ''}
+                </div>
+                <div
+                    style="margin-top: 1rem; border-top: 1px solid #444; padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #4CAF50; font-size: 1.2rem; font-weight: bold;">₹${item.price || '0'}</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="book-btn"
+                            style="width: auto; padding: 0.5rem 1rem; background: #444; border: 1px solid #666;"
+                            onclick="openInGoogleMaps('${item.name.replace(/'/g, " \\'")}')">📍 Maps</button>
+                        <button class="book-btn" style="width: auto; padding: 0.5rem 1rem;"
+                            onclick='addToBudget(${JSON.stringify(item).replace(/\x27/g, "&#39;")})'>Add to Plan</button>
+                    </div>
+                </div>
+            </div>
+            `).join('');
+                }
+
+                async function initLocationSuggestions() {
+                    try {
+                        const locations = await db.getLocations();
+                        if (!locations) return;
+
+                        // Populate Datalists
+                        const populate = (id, list) => {
+                            const dl = document.getElementById(id);
+                            if (dl) {
+                                dl.innerHTML = list.map(item => `<option value="${item}">`).join('');
+                            }
+                        };
+
+                        populate('districtList', locations.districts);
+                        populate('cityList', locations.cities);
+                        populate('villageList', locations.villages);
+
+                        // Populate Quick Select Buttons
+                        const quickDiv = document.getElementById('quickSelectButtons');
+                        if (quickDiv && locations.all) {
+                            // Show all available locations
+                            quickDiv.innerHTML = locations.all.map(loc => `
+                <button type="button" class="btn"
+                    style="background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.3rem;"
+                    onclick="quickSelect('${loc.district}', '${loc.city}', '${loc.village}')"
+                    onmouseover="this.style.background='#444'; this.style.borderColor='white';"
+                    onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='#444';">
+                    <span style="font-size: 1rem;">📍</span>
+                    <div style="text-align: left;">
+                        <div style="font-weight: bold;">${loc.village}</div>
+                        <div style="font-size: 0.7rem; color: #aaa;">${loc.city}, ${loc.district}</div>
+                    </div>
+                </button>
+                `).join('');
+                        }
+                    } catch (error) {
+                        console.error('Error loading location suggestions:', error);
+                    }
+                }
+
+                function quickSelect(d, c, v) {
+                    document.getElementById('district').value = d;
+                    document.getElementById('city').value = c;
+                    document.getElementById('village').value = v;
+                }
+
+                function handleLocationSubmit(event) {
+                    event.preventDefault();
+
+                    const locationData = {
+                        district: document.getElementById('district').value.trim(),
+                        city: document.getElementById('city').value.trim(),
+                        village: document.getElementById('village').value.trim()
+                    };
+
+                    localStorage.setItem('userLocation', JSON.stringify(locationData));
+                    const modal = document.getElementById('locationModal');
+                    modal.style.display = 'none'; // Close modal explicitly
+                    checkLocation();
+                }
+
+                function changeLocation() {
+                    const modal = document.getElementById('locationModal');
+                    modal.style.display = 'flex';
+
+                    // Pre-fill existing location if available
+                    const locationData = localStorage.getItem('userLocation');
+                    if (locationData) {
+                        const loc = JSON.parse(locationData);
+                        document.getElementById('district').value = loc.district || '';
+                        document.getElementById('city').value = loc.city || '';
+                        document.getElementById('village').value = loc.village || '';
+                    }
+                }
+
+                // Initialize
+                initLocationSuggestions();
+                checkLocation();
+
+                // Removed undefined loadBookings() call that crashed the script
+
+                // --- NEW FEATURES LOGIC ---
+
+                function switchTab(tabName) {
+                    // Update Tab UI
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    const tabBtn = document.getElementById('tabButtonLetsGo');
+                    if (tabBtn) tabBtn.classList.add('active');
+
+                    // Show content
+                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                    const content = document.getElementById(`tab-${tabName}`);
+                    if (content) content.style.display = 'block';
+                }
+
+                function redirectToGoogleMaps() {
+                    const district = document.querySelector('input[list="districtList"]').value;
+                    const city = document.querySelector('input[list="cityList"]').value;
+                    const village = document.querySelector('input[list="villageList"]').value;
+
+                    if (!district && !city && !village) {
+                        alert('Please select a location first to find it on Google Maps.');
+                        return;
+                    }
+
+                    const query = `${village || ''} ${city || ''} ${district || ''} Kerala India`.trim();
+                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+                    window.open(url, '_blank');
+                }
+
+                function redirectToGoogleTranslate() {
+                    window.open('https://translate.google.com/?sl=en&tl=ml&op=translate', '_blank');
+                }
+
+                function openInGoogleMaps(itemName) {
+                    const district = document.querySelector('input[list="districtList"]').value;
+                    const city = document.querySelector('input[list="cityList"]').value;
+                    const village = document.querySelector('input[list="villageList"]').value;
+
+                    const query = `${itemName} ${village || ''} ${city || ''} ${district || ''} Kerala India`.trim();
+                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+                    window.open(url, '_blank');
+                }
+
+                function showFeature(featureName) {
+                    // Hide menu, show specific feature
+                    document.getElementById('letsGoMenu').style.display = 'none';
+                    document.querySelectorAll('.feature-section').forEach(s => s.style.display = 'none');
+
+                    const featureSection = document.getElementById(`feature-${featureName}`);
+                    if (featureSection) {
+                        featureSection.style.display = 'block';
+                    }
+                }
+
+                function showLetsGoMenu() {
+                    document.querySelectorAll('.feature-section').forEach(s => s.style.display = 'none');
+                    document.getElementById('letsGoMenu').style.display = 'grid';
+                }
+
+                // Internal state for current session bookings - load from localStorage if exists
+                let currentBookings = JSON.parse(localStorage.getItem('currentBookings') || '[]');
+
+                function updateHotelPrice(hotelId, pricePerNight) {
+                    const daysInput = document.getElementById(`days-${hotelId}`);
+                    if (!daysInput) return;
+                    const days = parseInt(daysInput.value) || 1;
+                    const total = days * pricePerNight;
+                    const totalSpan = document.getElementById(`total-${hotelId}`);
+                    if (totalSpan) totalSpan.textContent = total;
+                }
+
+                function removeBooking(index) {
+                    currentBookings.splice(index, 1);
+                    localStorage.setItem('currentBookings', JSON.stringify(currentBookings));
+                    updateBookedList();
+                    calculateBudget();
+                }
+
+                function updateBookedList() {
+                    const list = document.getElementById('bookedItemsList');
+                    const totalDisplay = document.getElementById('bookedTotal');
+
+                    if (currentBookings.length === 0) {
+                        list.innerHTML = '<p>No items added yet.</p>';
+                        totalDisplay.textContent = '0';
+                        return;
+                    }
+
+                    let total = 0;
+                    list.innerHTML = currentBookings.map((item, index) => {
+                        total += parseInt(item.price);
+                        return `
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #444;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: bold; color: white;">${item.name}</span>
+                        <span style="font-size: 0.8rem; color: #aaa;">${item.description || ''}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-weight: bold; color: #4CAF50;">₹${item.price}</span>
+                        <button onclick="removeBooking(${index})"
+                            style="background: rgba(255, 85, 85, 0.1); border: 1px solid #ff5555; color: #ff5555; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#ff5555'; this.style.color='white';"
+                            onmouseout="this.style.background='rgba(255, 85, 85, 0.1)'; this.style.color='#ff5555';">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+                `;
+                    }).join('');
+
+                    totalDisplay.textContent = total;
+                    // Also call init budget on load
+                    calculateBudget();
+                }
+
+                // Initialize booked list on load
+                updateBookedList();
+
+                function calculateBudget() {
+                    const days = parseInt(document.getElementById('days').value) || 1;
+                    const people = parseInt(document.getElementById('people').value) || 1;
+                    const additionalExpenses = parseInt(document.getElementById('additionalExpenses').value) || 0;
+
+                    // Calculate total from booked items
+                    let bookedTotal = 0;
+                    currentBookings.forEach(item => {
+                        const price = parseInt(item.price) || 0;
+                        bookedTotal += price;
+                    });
+
+                    // Total = Booked items + Additional expenses
+                    const totalCost = bookedTotal + additionalExpenses;
+
+                    // Cost per person
+                    const costPerPerson = people > 0 ? Math.ceil(totalCost / people) : totalCost;
+
+                    // Update display
+                    document.getElementById('totalCost').textContent = totalCost.toLocaleString();
+                    document.getElementById('displayPeople').textContent = people;
+                    document.getElementById('costPerPerson').textContent = costPerPerson.toLocaleString();
+                    document.getElementById('budgetResult').style.display = 'block';
+                }
+
+                function addToBudget(item) {
+                    currentBookings.push(item);
+                    localStorage.setItem('currentBookings', JSON.stringify(currentBookings));
+                    alert(`Added ${item.name} (₹${item.price}) to your budget calculator!`);
+                    updateBookedList();
+                    calculateBudget(); // Auto-update total
+                }
+
+                function addHotelToBudget(item) {
+                    const hotelId = (item._id || item.name || "").toString().replace(/\s/g, '');
+                    const daysInput = document.getElementById(`days-${hotelId}`);
+                    const days = daysInput ? (parseInt(daysInput.value) || 1) : 1;
+                    const price = parseInt(item.price) || 0;
+                    const totalPrice = days * price;
+
+                    const hotelBooking = {
+                        name: `${item.name} (${days} ${days === 1 ? 'night' : 'nights'})`,
+                        price: totalPrice,
+                        description: item.description
+                    };
+
+                    currentBookings.push(hotelBooking);
+                    localStorage.setItem('currentBookings', JSON.stringify(currentBookings));
+                    alert(`Added ${item.name} for ${days} ${days === 1 ? 'night' : 'nights'} (₹${totalPrice}) to your budget
+                calculator!`);
+                    updateBookedList();
+                    calculateBudget();
+                }
+
+                function updateLocationDisplays(loc) {
+                    // Update all spans with class 'current-village' to show the village name
+                    const spans = document.querySelectorAll('.current-village');
+                    spans.forEach(span => span.textContent = loc.village || 'this area');
+                }
+            </script>
+</body>
+
+</html>

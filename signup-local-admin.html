@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Admin Signup - Local Tourism Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a1628 0%, #0d2545 40%, #1a3a2a 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* ===== TOURISM BACKGROUND CANVAS ===== */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Animated route/path lines */
+        .route-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(126, 200, 164, 0.3), transparent);
+            animation: routeFlow var(--dur, 8s) linear infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes routeFlow {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(200%);
+                opacity: 0;
+            }
+        }
+
+        /* Floating map pins */
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            animation: pinFloat var(--dur, 6s) ease-in-out infinite alternate;
+            animation-delay: var(--delay, 0s);
+        }
+
+        .map-pin::before {
+            content: '📍';
+            font-size: var(--size, 18px);
+            opacity: 0.25;
+        }
+
+        @keyframes pinFloat {
+            0% {
+                transform: translateY(0px) scale(1);
+            }
+
+            100% {
+                transform: translateY(-15px) scale(1.1);
+            }
+        }
+
+        /* Compass rose in corner */
+        .compass {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 80px;
+            height: 80px;
+            opacity: 0.08;
+            animation: compassSpin 20s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+            font-size: 70px;
+            line-height: 80px;
+            text-align: center;
+        }
+
+        @keyframes compassSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Dotted map grid */
+        .map-grid {
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(126, 200, 164, 0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            background: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-top: 0.5rem;
+        }
+
+        .signup-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 200px);
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(126, 200, 164, 0.2);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .input-group label .optional {
+            color: #888;
+            font-weight: 400;
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #888;
+            background: #444;
+        }
+
+        .input-group input::placeholder {
+            color: #aaa;
+        }
+
+        .password-strength {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .password-strength.show {
+            display: block;
+        }
+
+        .password-strength.weak {
+            color: #ff6b6b;
+        }
+
+        .password-strength.medium {
+            color: #ffd93d;
+        }
+
+        .password-strength.strong {
+            color: #6bcf7f;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            color: #6bcf7f;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .signup-button {
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .signup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+            background: #555;
+        }
+
+        .signup-button:active {
+            transform: translateY(0);
+        }
+
+        .signup-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1rem;
+            color: #aaa;
+        }
+
+        .login-link a {
+            color: white;
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #888;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .signup-form {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Tourism Background -->
+    <div class="map-grid"></div>
+    <div class="bg-canvas" id="bgCanvas"></div>
+    <div class="compass">🧭</div>
+    <script>
+        // Spawn floating map pins and travel icons
+        const icons = ['📍', '🗺️', '✈️', '🏔️', '🌿', '🧭'];
+        const canvas = document.getElementById('bgCanvas');
+        for (let i = 0; i < 14; i++) {
+            const el = document.createElement('div');
+            el.className = 'map-pin';
+            el.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;--size:${16 + Math.random() * 20}px;--dur:${5 + Math.random() * 7}s;--delay:${Math.random() * 5}s;`;
+            el.textContent = icons[i % icons.length];
+            el.style.fontSize = (16 + Math.random() * 20) + 'px';
+            canvas.appendChild(el);
+        }
+        // Spawn route lines
+        for (let i = 0; i < 4; i++) {
+            const r = document.createElement('div');
+            r.className = 'route-line';
+            r.style.cssText = `top:${15 + Math.random() * 70}%;width:${50 + Math.random() * 50}%;--dur:${7 + Math.random() * 5}s;--delay:${Math.random() * 4}s;`;
+            canvas.appendChild(r);
+        }
+    </script>
+    <header>
+        <h1>local tourism management</h1>
+        <p class="subtitle">Local Admin Signup</p>
+    </header>
+
+    <div class="signup-container">
+        <form class="signup-form" onsubmit="handleSignup(event)">
+            <h2 class="form-title">Create Local Admin Account</h2>
+
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                <div class="error-message" id="usernameError"></div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Choose a strong password" required>
+                <div class="password-strength" id="passwordStrength"></div>
+            </div>
+
+            <div class="input-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password"
+                    required>
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+
+            <div class="input-group">
+                <label for="fullName">Full Name <span class="optional">(optional)</span></label>
+                <input type="text" id="fullName" name="fullName" placeholder="Your full name">
+            </div>
+
+            <div class="input-group">
+                <label for="email">Email <span class="optional">(optional)</span></label>
+                <input type="email" id="email" name="email" placeholder="your.email@example.com">
+            </div>
+
+            <div class="input-group">
+                <label for="phone">Phone <span class="optional">(optional)</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="Your phone number">
+            </div>
+
+            <div class="input-group">
+                <label for="address">Address <span class="optional">(optional)</span></label>
+                <input type="text" id="address" name="address" placeholder="Your address">
+            </div>
+
+            <div
+                style="margin-top:0.5rem;padding:1rem;background:rgba(126,200,164,0.08);border:1px solid rgba(126,200,164,0.3);border-radius:10px;">
+                <p style="font-size:0.9rem;color:#7ec8a4;margin-bottom:1rem;font-weight:600;">📍 Your Jurisdiction
+                    Location (required)</p>
+                <div class="input-group" style="margin-bottom:1rem;">
+                    <label for="district">District</label>
+                    <input type="text" id="district" name="district" placeholder="e.g. Ernakulam" required>
+                </div>
+                <div class="input-group" style="margin-bottom:1rem;">
+                    <label for="city">City / Town</label>
+                    <input type="text" id="city" name="city" placeholder="e.g. Kochi" required>
+                </div>
+                <div class="input-group">
+                    <label for="village">Village / Area</label>
+                    <input type="text" id="village" name="village" placeholder="e.g. Kakkanad" required>
+                </div>
+            </div>
+
+            <div class="error-message" id="generalError"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <button type="submit" class="signup-button" id="signupButton">Sign Up</button>
+
+            <div class="login-link">
+                Already have an account? <a href="index.html">Login here</a>
+            </div>
+        </form>
+
+        <a href="index.html" class="back-link">← Back to home</a>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            const strengthIndicator = document.getElementById('passwordStrength');
+
+            if (password.length === 0) {
+                strengthIndicator.classList.remove('show');
+                return;
+            }
+
+            strengthIndicator.classList.add('show');
+
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            strengthIndicator.classList.remove('weak', 'medium', 'strong');
+
+            if (strength <= 2) {
+                strengthIndicator.textContent = '⚠️ Weak password';
+                strengthIndicator.classList.add('weak');
+            } else if (strength <= 4) {
+                strengthIndicator.textContent = '✓ Medium password';
+                strengthIndicator.classList.add('medium');
+            } else {
+                strengthIndicator.textContent = '✓ Strong password';
+                strengthIndicator.classList.add('strong');
+            }
+        }
+
+        // Real-time password strength checking
+        document.getElementById('password').addEventListener('input', function (e) {
+            checkPasswordStrength(e.target.value);
+        });
+
+        // Real-time password match checking
+        document.getElementById('confirmPassword').addEventListener('input', function (e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = e.target.value;
+            const errorMessage = document.getElementById('confirmPasswordError');
+
+            if (confirmPassword.length > 0 && password !== confirmPassword) {
+                errorMessage.textContent = 'Passwords do not match';
+                errorMessage.classList.add('show');
+            } else {
+                errorMessage.classList.remove('show');
+            }
+        });
+
+        // Handle signup
+        async function handleSignup(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const district = document.getElementById('district').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const village = document.getElementById('village').value.trim();
+
+            const generalError = document.getElementById('generalError');
+            const successMessage = document.getElementById('successMessage');
+            const signupButton = document.getElementById('signupButton');
+
+            // Clear previous messages
+            generalError.classList.remove('show');
+            successMessage.classList.remove('show');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                generalError.textContent = 'Passwords do not match';
+                generalError.classList.add('show');
+                return;
+            }
+
+            // Validate password strength (minimum requirement)
+            if (password.length < 6) {
+                generalError.textContent = 'Password must be at least 6 characters long';
+                generalError.classList.add('show');
+                return;
+            }
+
+            // Disable button during submission
+            signupButton.disabled = true;
+            signupButton.textContent = 'Creating Account...';
+
+            try {
+                const response = await api.register(username, password, 'local', {
+                    fullName,
+                    email,
+                    phone,
+                    address,
+                    district,
+                    city,
+                    village
+                });
+
+                if (response.success) {
+                    successMessage.textContent = '✓ Signup successful! Your account is pending approval by the main administrator. You will be able to login once approved.';
+                    successMessage.classList.add('show');
+
+                    // Redirect to login page after 4 seconds
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 4000);
+                } else {
+                    generalError.textContent = response.message || 'Signup failed. Please try again.';
+                    generalError.classList.add('show');
+                    signupButton.disabled = false;
+                    signupButton.textContent = 'Sign Up';
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                generalError.textContent = 'Signup failed. Please make sure the backend server is running.';
+                generalError.classList.add('show');
+                signupButton.disabled = false;
+                signupButton.textContent = 'Sign Up';
+            }
+        }
+    </script>
+</body>
+
+</html>

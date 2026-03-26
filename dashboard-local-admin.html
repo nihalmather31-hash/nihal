@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Admin Dashboard - Local Tourism Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(160deg, #0a1628 0%, #0d2040 50%, #0a2010 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== MAP NETWORK BACKGROUND ===== */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(126, 200, 164, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(126, 200, 164, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .bg-node {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(126, 200, 164, 0.5);
+            box-shadow: 0 0 10px rgba(126, 200, 164, 0.4);
+            animation: nodePulse var(--dur, 3s) ease-in-out infinite alternate;
+            animation-delay: var(--delay, 0s);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes nodePulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: scale(1.8);
+                opacity: 0.8;
+            }
+        }
+
+        .bg-route {
+            position: fixed;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(126, 200, 164, 0.2), transparent);
+            animation: routeFlow var(--dur, 10s) linear infinite;
+            animation-delay: var(--delay, 0s);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes routeFlow {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(200vw);
+            }
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(126, 200, 164, 0.3);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #555;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid white;
+        }
+
+        .admin-card {
+            background: #222;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: #333;
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #555;
+        }
+
+        .btn-primary {
+            background: #444;
+        }
+
+        .spots-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .spot-item {
+            background: #222;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .spot-info h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .spot-info p {
+            color: #ccc;
+        }
+
+        .btn-danger {
+            background: #600;
+        }
+
+        .btn-danger:hover {
+            background: #800;
+        }
+
+        .btn-danger {
+            background: #600;
+        }
+
+        .btn-danger:hover {
+            background: #800;
+        }
+
+        /* Location Selection Styles */
+        .location-selector {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #444;
+            margin-bottom: 2rem;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Tabs */
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #444;
+            padding-bottom: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s;
+        }
+
+        .nav-btn.active {
+            color: white;
+            border-bottom: 2px solid white;
+        }
+
+        .feature-form {
+            margin-bottom: 1rem;
+            background: #2a2a2a;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+    </style>
+    <script src="db.js"></script>
+
+<body>
+    <!-- Map Network Background -->
+    <div class="bg-grid"></div>
+    <script>
+        // Spawn glowing map nodes
+        for (let i = 0; i < 12; i++) {
+            const n = document.createElement('div');
+            n.className = 'bg-node';
+            n.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;--dur:${2 + Math.random() * 4}s;--delay:${Math.random() * 3}s;`;
+            document.body.appendChild(n);
+        }
+        // Spawn route lines
+        for (let i = 0; i < 5; i++) {
+            const r = document.createElement('div');
+            r.className = 'bg-route';
+            r.style.cssText = `top:${10 + Math.random() * 80}%;width:${40 + Math.random() * 60}%;--dur:${8 + Math.random() * 6}s;--delay:${Math.random() * 6}s;`;
+            document.body.appendChild(r);
+        }
+    </script>
+    <header>
+        <h1>Local Admin Dashboard - Mookanoor</h1>
+        <div class="user-info">
+            <span>Welcome, <strong id="username">Admin</strong></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section">
+            <h2 class="section-title">Manage Local Spots</h2>
+
+            <div class="admin-card">
+                <h2 class="section-title">Manage Local Spots</h2>
+
+                <div class="location-selector">
+                    <h3>1. Select Location to Manage</h3>
+                    <div class="location-grid">
+                        <div class="form-group">
+                            <label>District</label>
+                            <input type="text" id="adminDistrict" placeholder="e.g. Ernakulam">
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="adminCity" placeholder="e.g. Kochi">
+                        </div>
+                        <div class="form-group">
+                            <label>Village</label>
+                            <input type="text" id="adminVillage" placeholder="e.g. Kakkanad">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadLocationDetails()" style="margin-top: 1rem;">Load
+                        Details</button>
+                </div>
+
+                <div class="admin-card" id="editDetailsSection" style="display: none;">
+                    <h3>2. Update Location Data</h3>
+                    <p id="currentLocationLabel" style="color: #aaa; margin-bottom: 1rem;"></p>
+
+                    <!-- Tabs -->
+                    <div class="admin-nav">
+                        <button class="nav-btn active" onclick="switchAdminTab('details')">Details</button>
+                        <button class="nav-btn" onclick="switchAdminTab('wannago')">Wanna Go</button>
+                    </div>
+
+                    <!-- Tab 1: Details -->
+                    <div id="admin-tab-details" class="admin-tab-content">
+                        <h4>General Description</h4>
+                        <form id="addSpotForm" onsubmit="saveDetails(event)">
+                            <div class="form-group">
+                                <label for="spotDescription">Description of Area</label>
+                                <textarea id="spotDescription" required
+                                    placeholder="General description of the village/area..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="bestTime">Best Time to Visit</label>
+                                <input type="text" id="bestTime" placeholder="e.g. October to March">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Description</button>
+                        </form>
+                    </div>
+
+                    <!-- Tab 2: Wanna Go -->
+                    <div id="admin-tab-wannago" class="admin-tab-content" style="display: none;">
+                        <h4>Manage Features</h4>
+                        <div class="admin-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+
+                            <!-- Hotel Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px;">
+                                <h5>🏨 Hotels</h5>
+                                <form onsubmit="addItem(event, 'hotels')" class="feature-form">
+                                    <input type="text" placeholder="Hotel Name" class="feat-name" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Price (₹)" class="feat-price"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Description" class="feat-desc"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="url" placeholder="Booking Link (e.g. https://...)"
+                                        class="feat-booking-link"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;"
+                                        title="Optional: URL where users can book this hotel online">
+                                    <input type="number" placeholder="Distance from location (km)" class="feat-distance"
+                                        step="0.1" min="0" style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="width: 100%; font-size: 0.9rem;">Add Hotel</button>
+                                </form>
+                                <ul id="list-hotels" class="item-list" style="list-style: none;"></ul>
+                            </div>
+
+                            <!-- Food Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px;">
+                                <h5>🍽️ Food Spots</h5>
+                                <form onsubmit="addItem(event, 'food')" class="feature-form">
+                                    <input type="text" placeholder="Restaurant/Hotel Name" class="feat-hotel" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Dish/Menu Name" class="feat-name" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Avg Price (₹)" class="feat-price"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Speciality" class="feat-desc"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Distance from location (km)" class="feat-distance"
+                                        step="0.1" min="0" style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="width: 100%; font-size: 0.9rem;">Add Food Item</button>
+                                </form>
+                                <ul id="list-food" class="item-list" style="list-style: none;"></ul>
+                            </div>
+
+                            <!-- Transport Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px;">
+                                <h5>🚕 Transport</h5>
+                                <form onsubmit="addItem(event, 'transport')" class="feature-form">
+                                    <select class="feat-type" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; background: #444; color: white; border: 1px solid #666;">
+                                        <option value="">Select Vehicle Type</option>
+                                        <option value="Auto">Auto-Rickshaw</option>
+                                        <option value="Bus">Bus</option>
+                                        <option value="Taxi">Taxi / Cab</option>
+                                        <option value="Ferry">Ferry</option>
+                                        <option value="Rent">Rental (Bike/Car)</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <input type="text" placeholder="Name/Service (e.g. KSRTC, Local Auto)"
+                                        class="feat-name" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Route (e.g. Station to Falls)" class="feat-route"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Est Price (₹)" class="feat-price"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Contact/Details" class="feat-desc"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Distance covered (km)" class="feat-distance"
+                                        step="0.1" min="0" style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="width: 100%; font-size: 0.9rem;">Add Transport</button>
+                                </form>
+                                <ul id="list-transport" class="item-list" style="list-style: none;"></ul>
+                            </div>
+
+                            <!-- Events Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px;">
+                                <h5>🎉 Events</h5>
+                                <form onsubmit="addItem(event, 'events')" class="feature-form">
+                                    <input type="text" placeholder="Event Name" class="feat-name" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Entry Fee (₹)" class="feat-price"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <textarea placeholder="Date & Details" class="feat-desc"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; height: 60px;"></textarea>
+                                    <input type="number" placeholder="Distance from location (km)" class="feat-distance"
+                                        step="0.1" min="0" style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="width: 100%; font-size: 0.9rem;">Add Event</button>
+                                </form>
+                                <ul id="list-events" class="item-list" style="list-style: none;"></ul>
+                            </div>
+
+
+
+
+                            <!-- Medical / Pharmacy Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px;">
+                                <h5>🏥 Medical / Pharmacy</h5>
+                                <form onsubmit="addItem(event, 'medical')" class="feature-form">
+                                    <input type="text" placeholder="Hospital / Clinic / Pharmacy Name" class="feat-name"
+                                        required style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Avg Fee (₹, 0 if free)" class="feat-price"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Contact / Timings" class="feat-desc"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Distance from location (km)" class="feat-distance"
+                                        step="0.1" min="0" style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="width: 100%; font-size: 0.9rem;">Add Medical Place</button>
+                                </form>
+                                <ul id="list-medical" class="item-list" style="list-style: none;"></ul>
+                            </div>
+
+                            <!-- Banks / ATMs Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px;">
+                                <h5>🏦 Banks / ATMs</h5>
+                                <form onsubmit="addItem(event, 'banks')" class="feature-form">
+                                    <input type="text" placeholder="Bank / ATM Name" class="feat-name" required
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Service Charge (₹, 0 if none)" class="feat-price"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="text" placeholder="Timings / Contact" class="feat-desc"
+                                        style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <input type="number" placeholder="Distance from location (km)" class="feat-distance"
+                                        step="0.1" min="0" style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="width: 100%; font-size: 0.9rem;">Add Bank / ATM</button>
+                                </form>
+                                <ul id="list-banks" class="item-list" style="list-style: none;"></ul>
+                            </div>
+
+
+                            <!-- Emergency Contacts Management -->
+                            <div style="background: #333; padding: 1rem; border-radius: 8px; grid-column: 1 / -1;">
+                                <h5>🚨 Emergency Numbers</h5>
+                                <form onsubmit="saveEmergencyContacts(event)" class="feature-form">
+                                    <div
+                                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                        <div>
+                                            <label>Police Station</label>
+                                            <input type="text" id="phonePolice" placeholder="Phone Number"
+                                                style="width: 100%; padding: 0.5rem;">
+                                        </div>
+                                        <div>
+                                            <label>Hospital</label>
+                                            <input type="text" id="phoneHospital" placeholder="Phone Number"
+                                                style="width: 100%; padding: 0.5rem;">
+                                        </div>
+                                        <div>
+                                            <label>Fire Force</label>
+                                            <input type="text" id="phoneFire" placeholder="Phone Number"
+                                                style="width: 100%; padding: 0.5rem;">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary"
+                                        style="margin-top: 1rem; width: 100%; background: #d32f2f;">Save Emergency
+                                        Numbers</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spots-list" id="spotsList">
+                    <div class="spot-item">
+                        <div class="spot-info">
+                            <h3>Mookanoor Viewpoint</h3>
+                            <p>Scenic viewpoint overlooking the valley</p>
+                        </div>
+                        <div>
+                            <button class="btn" onclick="editSpot('Mookanoor Viewpoint')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteSpot('Mookanoor Viewpoint')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Manage Bookings</h2>
+                <div class="spots-list" id="bookingsList">
+                    <div class="spot-item">
+                        <div class="spot-info">
+                            <h3>No bookings to manage</h3>
+                            <p>Bookings will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const username = localStorage.getItem('username') || 'Admin';
+            document.getElementById('username').textContent = username;
+
+            // Auto-fill location from admin's stored profile
+            const savedLoc = localStorage.getItem('adminLocation');
+            if (savedLoc) {
+                try {
+                    const loc = JSON.parse(savedLoc);
+                    if (loc.district) document.getElementById('adminDistrict').value = loc.district;
+                    if (loc.city) document.getElementById('adminCity').value = loc.city;
+                    if (loc.village) document.getElementById('adminVillage').value = loc.village;
+                    // Auto-load location data
+                    if (loc.district && loc.city && loc.village) {
+                        loadLocationDetails();
+                    }
+                } catch (e) { /* ignore parse errors */ }
+            }
+
+            async function loadLocationDetails() {
+                const district = document.getElementById('adminDistrict').value;
+                const city = document.getElementById('adminCity').value;
+                const village = document.getElementById('adminVillage').value;
+
+                if (!district || !city || !village) {
+                    alert('Please fill in all location fields');
+                    return;
+                }
+
+                // Persist the location for next login session
+                localStorage.setItem('adminLocation', JSON.stringify({ district, city, village }));
+
+                try {
+                    const details = await db.getPlaceDetails(district, city, village);
+
+                    document.getElementById('editDetailsSection').style.display = 'block';
+                    document.getElementById('currentLocationLabel').textContent = `Editing: ${village}, ${city}, ${district}`;
+
+                    if (details) {
+                        document.getElementById('spotDescription').value = details.description || '';
+                        document.getElementById('bestTime').value = details.bestTime || '';
+
+                        // Load emergency numbers
+                        if (details.emergency) {
+                            document.getElementById('phonePolice').value = details.emergency.police || '';
+                            document.getElementById('phoneHospital').value = details.emergency.hospital || '';
+                            document.getElementById('phoneFire').value = details.emergency.fire || '';
+                        } else {
+                            document.getElementById('phonePolice').value = '';
+                            document.getElementById('phoneHospital').value = '';
+                            document.getElementById('phoneFire').value = '';
+                        }
+                    } else {
+                        document.getElementById('spotDescription').value = '';
+                        document.getElementById('bestTime').value = '';
+                        document.getElementById('phonePolice').value = '';
+                        document.getElementById('phoneHospital').value = '';
+                        document.getElementById('phoneFire').value = '';
+                    }
+
+                    // Load lists for each category
+                    renderItemList('hotels', details?.hotels || []);
+                    renderItemList('food', details?.food || []);
+                    renderItemList('transport', details?.transport || []);
+                    renderItemList('events', details?.events || []);
+                    renderItemList('shopping', details?.shopping || []);
+                    renderItemList('medical', details?.medical || []);
+                    renderItemList('banks', details?.banks || []);
+                    renderItemList('parking', details?.parking || []);
+                } catch (error) {
+                    console.error('Error loading location details:', error);
+                    alert('Failed to load location details. Please try again.');
+                }
+            }
+
+            async function saveEmergencyContacts(event) {
+                event.preventDefault();
+                const district = document.getElementById('adminDistrict').value;
+                const city = document.getElementById('adminCity').value;
+                const village = document.getElementById('adminVillage').value;
+
+                if (!district || !city || !village) {
+                    alert('Please load a location first.');
+                    return;
+                }
+
+                const emergency = {
+                    police: document.getElementById('phonePolice').value,
+                    hospital: document.getElementById('phoneHospital').value,
+                    fire: document.getElementById('phoneFire').value
+                };
+
+                try {
+                    await db.savePlaceDetails(district, city, village, { emergency });
+                    alert('Emergency numbers saved successfully!');
+                } catch (error) {
+                    console.error('Error saving emergency contacts:', error);
+                    alert('Failed to save emergency numbers. Please try again.');
+                }
+            }
+
+            // Storage for rendered items (avoids JSON-in-HTML-attribute quoting issues)
+            let _adminItems = {};
+
+            function renderItemList(category, items) {
+                const listEl = document.getElementById(`list-${category}`);
+                if (!listEl) return;
+
+                // Always save a fresh copy for the edit modal to look up
+                _adminItems[category] = items;
+
+                if (items.length === 0) {
+                    listEl.innerHTML = '<li style="color: #888;">No items yet</li>';
+                    return;
+                }
+
+                // Special handling for hotels - show booking link
+                if (category === 'hotels') {
+                    listEl.innerHTML = items.map(item => `
+                        <li style="padding: 0.75rem; margin: 0.5rem 0; background: #333; border-radius: 4px; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem;">
+                            <span style="flex:1;">
+                                <strong>${item.name}</strong> - ₹${item.price}/night
+                                ${item.description ? `<br><small style="color: #aaa;">${item.description}</small>` : ''}
+                                ${item.distance != null ? `<br><small style="color:#64b5f6;">📍 ${item.distance} km</small>` : ''}
+                                ${item.bookingLink ? `<br><a href="${item.bookingLink}" target="_blank" style="color: #64b5f6; font-size: 0.8rem; word-break: break-all;">🌐 ${item.bookingLink}</a>` : '<br><small style="color:#666;">No booking link</small>'}
+                            </span>
+                            <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+                                <button onclick="openEditModal('hotels', '${item._id}')"
+                                    style="background:#1565c0;color:white;border:none;padding:0.3rem 0.7rem;border-radius:4px;cursor:pointer;">Edit</button>
+                                <button onclick="deleteItem('hotels', '${item.id}')"
+                                    style="background:#ff5555;color:white;border:none;padding:0.3rem 0.7rem;border-radius:4px;cursor:pointer;">Delete</button>
+                            </div>
+                        </li>
+                    `).join('');
+                    return;
+                }
+
+                // Special handling for food - group by hotel
+                if (category === 'food') {
+                    // Group food items by hotel name
+                    const groupedByHotel = {};
+                    items.forEach(item => {
+                        const hotelName = item.hotelName || 'Other Restaurants';
+                        if (!groupedByHotel[hotelName]) {
+                            groupedByHotel[hotelName] = [];
+                        }
+                        groupedByHotel[hotelName].push(item);
+                    });
+
+                    // Render grouped by hotel
+                    listEl.innerHTML = Object.keys(groupedByHotel).map(hotelName => `
+                        <li style="margin-bottom: 1.5rem; padding: 1rem; background: #2a2a2a; border-radius: 8px;">
+                            <strong style="color: #FFD700; font-size: 1.1rem; display: block; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #444;">
+                                🏨 ${hotelName}
+                            </strong>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                ${groupedByHotel[hotelName].map(item => `
+                                    <li style="padding: 0.5rem; margin: 0.5rem 0; background: #333; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span>
+                                            <strong>${item.name}</strong> - ₹${item.price}
+                                            ${item.description ? `<br><small style="color: #aaa;">${item.description}</small>` : ''}
+                                            ${item.distance != null ? `<br><small style="color:#64b5f6;">📍 ${item.distance} km</small>` : ''}
+                                        </span>
+                                        <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+                                            <button onclick="openEditModal('food', '${item._id}')"
+                                                style="background:#1565c0;color:white;border:none;padding:0.3rem 0.7rem;border-radius:4px;cursor:pointer;">Edit</button>
+                                            <button onclick="deleteItem('food', '${item.id}')"
+                                                style="background:#ff5555;color:white;border:none;padding:0.3rem 0.7rem;border-radius:4px;cursor:pointer;">Delete</button>
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </li>
+                    `).join('');
+                    return;
+                }
+
+                // Default rendering for other categories (including transport)
+                listEl.innerHTML = items.map(item => `
+                    <li style="padding: 0.5rem; margin: 0.5rem 0; background: #333; border-radius: 4px; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+                        <span style="flex:1;">
+                            <strong>${item.name}</strong> 
+                            ${item.type ? ` <small style="background:#555; padding:0.1rem 0.3rem; border-radius:3px; color:#FFD700;">${item.type}</small>` : ''}
+                            - ₹${item.price}
+                            ${item.route ? `<br><small style="color: #ddd;">🛣️ ${item.route}</small>` : ''}
+                            ${item.description ? `<br><small style="color: #aaa;">${item.description}</small>` : ''}
+                            ${item.distance != null ? `<br><small style="color:#64b5f6;">📍 ${item.distance} km</small>` : ''}
+                        </span>
+                        <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+                            <button onclick="openEditModal('${category}', '${item._id}')"
+                                style="background:#1565c0;color:white;border:none;padding:0.3rem 0.7rem;border-radius:4px;cursor:pointer;">Edit</button>
+                            <button onclick="deleteItem('${category}', '${item.id}')"
+                                style="background:#ff5555;color:white;border:none;padding:0.3rem 0.7rem;border-radius:4px;cursor:pointer;">Delete</button>
+                        </div>
+                    </li>
+                `).join('');
+            }
+            async function addItem(event, category) {
+                event.preventDefault();
+                const form = event.target;
+                const district = document.getElementById('adminDistrict').value;
+                const city = document.getElementById('adminCity').value;
+                const village = document.getElementById('adminVillage').value;
+
+                const name = form.querySelector('.feat-name').value;
+                const priceRaw = form.querySelector('.feat-price').value;
+                const price = priceRaw !== '' ? parseInt(priceRaw) : null;
+                const description = form.querySelector('.feat-desc').value;
+
+                if (name && district && city && village) {
+                    try {
+                        const item = { name };
+
+                        // Categories that use description
+                        if (category !== 'transport') {
+                            item.description = description;
+                        } else {
+                            // Transport uses contact instead of description in schema
+                            item.contact = description;
+                        }
+
+                        if (price !== null) item.price = price;
+
+                        // For transport items, capture specific route and type
+                        if (category === 'transport') {
+                            const typeField = form.querySelector('.feat-type');
+                            const routeField = form.querySelector('.feat-route');
+                            if (typeField) item.type = typeField.value;
+                            if (routeField) item.route = routeField.value;
+                        }
+
+                        // For food items, always capture hotel/restaurant name (now required)
+                        if (category === 'food') {
+                            const hotelNameField = form.querySelector('.feat-hotel');
+                            if (hotelNameField) {
+                                item.hotelName = hotelNameField.value || 'Other Restaurants';
+                            }
+                        }
+
+                        // For hotels, capture optional booking link
+                        if (category === 'hotels') {
+                            const linkField = form.querySelector('.feat-booking-link');
+                            if (linkField && linkField.value.trim()) {
+                                item.bookingLink = linkField.value.trim();
+                            }
+                        }
+
+                        // Capture optional distance for all categories
+                        const distField = form.querySelector('.feat-distance');
+                        if (distField && distField.value !== '') {
+                            item.distance = parseFloat(distField.value);
+                        }
+
+                        await db.addItem(district, city, village, category, item);
+                        form.reset();
+                        // Refresh data
+                        const details = await db.getPlaceDetails(district, city, village);
+                        renderItemList(category, details[category] || []);
+                    } catch (error) {
+                        console.error('Error adding item:', error);
+                        alert('Failed to add item. Please try again.');
+                    }
+                }
+            }
+
+            async function deleteItem(category, itemId) {
+                const district = document.getElementById('adminDistrict').value;
+                const city = document.getElementById('adminCity').value;
+                const village = document.getElementById('adminVillage').value;
+
+                if (confirm('Delete this item?')) {
+                    try {
+                        await db.removeItem(district, city, village, category, itemId);
+                        const details = await db.getPlaceDetails(district, city, village);
+                        renderItemList(category, details[category] || []);
+                    } catch (error) {
+                        console.error('Error deleting item:', error);
+                        alert('Failed to delete item. Please try again.');
+                    }
+                }
+            }
+
+            async function saveDetails(event) {
+                event.preventDefault();
+
+                const district = document.getElementById('adminDistrict').value;
+                const city = document.getElementById('adminCity').value;
+                const village = document.getElementById('adminVillage').value;
+
+                const details = {
+                    description: document.getElementById('spotDescription').value,
+                    bestTime: document.getElementById('bestTime').value,
+                    updatedBy: username
+                };
+
+                try {
+                    await db.savePlaceDetails(district, city, village, details);
+                    alert('Location details saved successfully!');
+                } catch (error) {
+                    console.error('Error saving details:', error);
+                    alert('Failed to save location details. Please try again.');
+                }
+            }
+
+            function loadSpots() {
+                const spots = JSON.parse(localStorage.getItem('localSpots') || '[]');
+                const spotsList = document.getElementById('spotsList');
+
+                if (spots.length === 0) {
+                    spotsList.innerHTML = `
+                    <div class="spot-item">
+                        <div class="spot-info">
+                            <h3>Mookanoor Viewpoint</h3>
+                            <p>Scenic viewpoint overlooking the valley</p>
+                        </div>
+                        <div>
+                            <button class="btn" onclick="editSpot('Mookanoor Viewpoint')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteSpot('Mookanoor Viewpoint')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                } else {
+                    spotsList.innerHTML = spots.map(spot => `
+                    <div class="spot-item">
+                        <div class="spot-info">
+                            <h3>${spot.name}</h3>
+                            <p>${spot.description}</p>
+                        </div>
+                        <div>
+                            <button class="btn" onclick="editSpot('${spot.name}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteSpot('${spot.name}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+                }
+            }
+
+            function editSpot(name) {
+                const newName = prompt('Enter new name:', name);
+                if (newName) {
+                    alert('Spot updated! (Full edit functionality can be implemented)');
+                }
+            }
+
+            function deleteSpot(name) {
+                if (confirm(`Are you sure you want to delete ${name}?`)) {
+                    const spots = JSON.parse(localStorage.getItem('localSpots') || '[]');
+                    const filtered = spots.filter(spot => spot.name !== name);
+                    localStorage.setItem('localSpots', JSON.stringify(filtered));
+                    loadSpots();
+                }
+            }
+
+            function switchAdminTab(tabName) {
+                // Update buttons
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`.nav-btn[onclick="switchAdminTab('${tabName}')"]`).classList.add('active');
+
+                // Update content
+                document.querySelectorAll('.admin-tab-content').forEach(content => content.style.display = 'none');
+                document.getElementById(`admin-tab-${tabName}`).style.display = 'block';
+            }
+
+            function logout() {
+                localStorage.removeItem('username');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('adminLocation');
+                window.location.href = 'index.html';
+            }
+
+            loadSpots();
+        </script>
+
+        <!-- ── EDIT ITEM MODAL ───────────────────────────────────────────── -->
+        <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75);
+         z-index:9999; display:none; align-items:center; justify-content:center;">
+            <div style="background:#2a2a2a; border-radius:12px; padding:2rem; width:90%; max-width:480px;
+                    max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h3 style="color:#FFD700; margin:0;">✏️ Edit Item</h3>
+                    <button onclick="closeEditModal()"
+                        style="background:none; border:none; color:#aaa; font-size:1.5rem; cursor:pointer;">✕</button>
+                </div>
+                <div id="editFormFields"></div>
+                <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+                    <button onclick="saveEdit()" style="flex:1; padding:0.75rem; background:#4CAF50; color:white; border:none;
+                           border-radius:8px; font-size:1rem; cursor:pointer; font-weight:bold;">
+                        💾 Save Changes
+                    </button>
+                    <button onclick="closeEditModal()" style="flex:1; padding:0.75rem; background:#555; color:white; border:none;
+                           border-radius:8px; font-size:1rem; cursor:pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ── EDIT MODAL STATE ─────────────────────────────────────────────────
+            let _editState = { category: null, itemId: null };
+
+            // Field definitions per category
+            const EDIT_FIELDS = {
+                hotels: ['name', 'price', 'description', 'bookingLink', 'distance'],
+                food: ['name', 'price', 'description', 'distance'],
+                transport: ['type', 'name', 'route', 'price', 'contact', 'distance'],
+                events: ['name', 'price', 'description', 'distance'],
+                touristspots: ['name', 'price', 'description', 'distance'],
+                medical: ['name', 'price', 'description', 'distance'],
+                banks: ['name', 'price', 'description', 'distance'],
+            };
+
+            const FIELD_META = {
+                name: { label: 'Name', type: 'text', required: true },
+                type: { label: 'Type (Auto/Bus/Taxi)', type: 'text' },
+                route: { label: 'Route (From - To)', type: 'text' },
+                price: { label: 'Price / Fee (₹)', type: 'number' },
+                description: { label: 'Description / Details', type: 'textarea' },
+                contact: { label: 'Contact / Details', type: 'text' },
+                bookingLink: { label: 'Booking Link (URL)', type: 'url' },
+                distance: { label: 'Distance from location (km)', type: 'number', step: '0.1', min: '0' },
+            };
+
+            function openEditModal(category, itemId) {
+                // Look up item from the stored list — use _id for reliable matching
+                const items = _adminItems[category] || [];
+                const item = items.find(i => (i._id || i.id) === itemId);
+                if (!item) { console.error('Item not found:', category, itemId, items); return; }
+
+                // Always store _id (MongoDB ObjectId string) as itemId for backend matching
+                _editState = { category, itemId: item._id || item.id };
+
+                const fields = EDIT_FIELDS[category] || ['name', 'price', 'description'];
+                const container = document.getElementById('editFormFields');
+
+                container.innerHTML = fields.map(field => {
+                    const meta = FIELD_META[field] || { label: field, type: 'text' };
+                    const val = item[field] != null ? item[field] : '';
+                    const inputStyle = 'width:100%;margin-bottom:1rem;padding:0.6rem;background:#333;border:1px solid #555;border-radius:6px;color:white;font-size:0.95rem;';
+
+                    if (meta.type === 'textarea') {
+                        return `<label style="display:block;margin-bottom:0.3rem;color:#ccc;font-size:0.9rem;">${meta.label}</label>
+                            <textarea id="ef_${field}" style="${inputStyle}height:70px;resize:vertical;" placeholder="${meta.label}">${val}</textarea>`;
+                    }
+                    const extra = meta.step ? `step="${meta.step}"` : '';
+                    const minAttr = meta.min != null ? `min="${meta.min}"` : '';
+                    const req = meta.required ? 'required' : '';
+                    return `<label style="display:block;margin-bottom:0.3rem;color:#ccc;font-size:0.9rem;">${meta.label}${meta.required ? ' *' : ''}</label>
+                        <input id="ef_${field}" type="${meta.type}" value="${val}" placeholder="${meta.label}"
+                            style="${inputStyle}" ${extra} ${minAttr} ${req}>`;
+                }).join('');
+
+                document.getElementById('editModal').style.display = 'flex';
+            }
+
+            function closeEditModal() {
+                document.getElementById('editModal').style.display = 'none';
+                _editState = { category: null, itemId: null };
+            }
+
+            async function saveEdit() {
+                const { category, itemId } = _editState;
+                if (!category || !itemId) return;
+
+                const district = document.getElementById('adminDistrict').value;
+                const city = document.getElementById('adminCity').value;
+                const village = document.getElementById('adminVillage').value;
+
+                if (!district || !city || !village) {
+                    alert('Please select a location first.');
+                    return;
+                }
+
+                const fields = EDIT_FIELDS[category] || ['name', 'price', 'description'];
+                const updates = {};
+
+                for (const field of fields) {
+                    const el = document.getElementById(`ef_${field}`);
+                    if (!el) continue;
+                    const meta = FIELD_META[field] || { type: 'text' };
+                    let val = el.value.trim();
+
+                    // Required fields must not be empty
+                    if (meta.required && val === '') {
+                        alert(`${meta.label} is required.`); el.focus(); return;
+                    }
+
+                    // Always include the field so changes (including clears) are sent
+                    if (meta.type === 'number' && val !== '') {
+                        updates[field] = parseFloat(val);
+                    } else {
+                        updates[field] = val || null;
+                    }
+                }
+
+                if (!updates.name) { alert('Name is required.'); return; }
+
+                try {
+                    await db.updateItem(district, city, village, category, itemId, updates);
+                    closeEditModal();
+                    const details = await db.getPlaceDetails(district, city, village);
+                    renderItemList(category, details[category] || []);
+                } catch (err) {
+                    console.error('Edit failed:', err);
+                    alert('Failed to save changes: ' + (err.message || 'Please try again.'));
+                }
+            }
+
+            // Close modal if backdrop is clicked
+            document.getElementById('editModal').addEventListener('click', function (e) {
+                if (e.target === this) closeEditModal();
+            });
+        </script>
+</body>
+
+
+</html>

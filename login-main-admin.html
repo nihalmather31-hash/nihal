@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Admin Login</title>
+    <script src="db.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #0d1a2e 50%, #1a0d0d 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Admin background elements */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .admin-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 215, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .float-icon {
+            position: absolute;
+            font-size: var(--size, 24px);
+            opacity: 0.06;
+            animation: floatIcon var(--dur, 8s) ease-in-out infinite alternate;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes floatIcon {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+        }
+
+        .compass {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            font-size: 70px;
+            opacity: 0.06;
+            animation: compassSpin 25s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes compassSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .login-form {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.03);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            background: #0a0a0a;
+            color: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #FFD700;
+            background: #111;
+        }
+
+        .error-message {
+            color: #ff5555;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            background: #FFC700;
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .links a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .links a:hover {
+            color: #FFD700;
+        }
+
+        .divider {
+            margin: 0 0.5rem;
+            color: #444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-grid"></div>
+    <div class="bg-canvas" id="bgCanvas"></div>
+    <div class="compass">🧭</div>
+    <script>
+        // Spawn floating admin icons
+        const icons = ['🛡️', '⚙️', '🔐', '📊', '🗝️', '📋'];
+        const canvas = document.getElementById('bgCanvas');
+        for (let i = 0; i < 10; i++) {
+            const el = document.createElement('div');
+            el.className = 'float-icon';
+            el.textContent = icons[i % icons.length];
+            el.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;--size:${20 + Math.random() * 30}px;--dur:${6 + Math.random() * 8}s;--delay:${Math.random() * 5}s;`;
+            canvas.appendChild(el);
+        }
+    </script>
+    <div class="login-container">
+        <h1>🛡️ Main Admin</h1>
+        <p class="subtitle">System Administrator Login</p>
+
+        <form class="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <button type="submit" class="login-btn" id="loginBtn">Login</button>
+        </form>
+
+        <div class="links">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Clear previous errors
+            errorMessage.classList.remove('show');
+
+            // Disable button during login
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        role: 'main-admin' // Fixed: using new role value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store auth token and user info
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('username', data.user.username);
+                    localStorage.setItem('userRole', data.user.role);
+                    localStorage.setItem('userId', data.user.id);
+
+                    // Redirect to main admin dashboard
+                    window.location.href = 'dashboard-main-admin.html';
+                } else {
+                    errorMessage.textContent = data.message || 'Login failed';
+                    errorMessage.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = 'Connection error. Please make sure the server is running.';
+                errorMessage.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+
+        // Check if already logged in
+        const authToken = localStorage.getItem('authToken');
+        const userRole = localStorage.getItem('userRole');
+        if (authToken && (userRole === 'main' || userRole === 'main-admin')) {
+            window.location.href = 'dashboard-main-admin.html';
+        }
+    </script>
+</body>
+
+</html>

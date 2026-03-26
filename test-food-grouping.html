@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Food Grouping Test</title>
+    <script src="db.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .restaurant {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+
+        .restaurant h3 {
+            color: #FFD700;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .food-item {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🍽️ Food Grouping Test</h1>
+    <button onclick="testFoodGrouping()" style="padding: 10px 20px; font-size: 16px;">Load Food Data</button>
+
+    <h2>Raw Data:</h2>
+    <pre id="rawData">Click button to load...</pre>
+
+    <h2>Grouped Display:</h2>
+    <div id="groupedDisplay"></div>
+
+    <script>
+        async function testFoodGrouping() {
+            try {
+                // Fetch data from API
+                const details = await db.getPlaceDetails('ernakulam', 'angamaly', 'mookanoor');
+
+                // Show raw data
+                document.getElementById('rawData').textContent = JSON.stringify(details.food, null, 2);
+
+                // Group by hotel
+                const groupedByHotel = {};
+                details.food.forEach(item => {
+                    const hotelName = item.hotelName || 'Other Restaurants';
+                    if (!groupedByHotel[hotelName]) {
+                        groupedByHotel[hotelName] = [];
+                    }
+                    groupedByHotel[hotelName].push(item);
+                });
+
+                // Display grouped
+                let html = '';
+                Object.keys(groupedByHotel).forEach(hotelName => {
+                    html += `
+                        <div class="restaurant">
+                            <h3>🏨 ${hotelName}</h3>
+                            ${groupedByHotel[hotelName].map(item => `
+                                <div class="food-item">
+                                    <strong>${item.name}</strong> - ₹${item.price}
+                                    <br><small>${item.description || 'No description'}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('groupedDisplay').innerHTML = html;
+
+            } catch (error) {
+                document.getElementById('rawData').textContent = 'Error: ' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+
+</html>

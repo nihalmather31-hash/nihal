@@ -1,0 +1,119 @@
+{
+  "users": [
+    {
+      "_id": "6989b86e9a55c48da0f0667b",
+      "username": "nihal",
+      "role": "general",
+      "email": "nihal@gmail.com",
+      "fullName": "nihal mather",
+      "phone": "9496975275",
+      "address": "",
+      "createdAt": "2026-02-09T10:35:26.385Z",
+      "__v": 0,
+      "status": "pending"
+    },
+    {
+      "_id": "6989ba099a55c48da0f06681",
+      "username": "simon",
+      "role": "local",
+      "email": "simon@gmail.com",
+      "fullName": "simon ramesh",
+      "phone": "9744913482",
+      "address": "",
+      "createdAt": "2026-02-09T10:42:17.125Z",
+      "__v": 0,
+      "status": "approved"
+    },
+    {
+      "_id": "698c1557a2ce8f2fac3e3c39",
+      "username": "saffan",
+      "role": "local",
+      "email": "saffan@gmail.com",
+      "fullName": "saffan saneer",
+      "phone": "00000",
+      "address": "",
+      "createdAt": "2026-02-11T05:36:23.419Z",
+      "__v": 0
+    },
+    {
+      "_id": "698c2c66572d36a3e3bc1f96",
+      "username": "admin",
+      "role": "main-admin",
+      "email": "admin@example.com",
+      "fullName": "Main Administrator",
+      "status": "approved",
+      "createdAt": "2026-02-11T07:14:46.959Z",
+      "__v": 0
+    }
+  ],
+  "places": [
+    {
+      "_id": "6989b7a49a55c48da0f06674",
+      "district": "ernakulam",
+      "city": "angamaly",
+      "village": "mookhanoor",
+      "hotels": [
+        {
+          "id": "1770633858687",
+          "name": "JJ Apartments",
+          "description": "",
+          "price": "3600",
+          "amenities": [],
+          "_id": "6989ba829a55c48da0f0668c"
+        },
+        {
+          "id": "1770634753712",
+          "name": "edaserry",
+          "description": "",
+          "price": "1400",
+          "amenities": [],
+          "_id": "6989be019a55c48da0f0672e"
+        }
+      ],
+      "food": [
+        {
+          "id": "1770743361663",
+          "name": "chicken  fried rice",
+          "description": "",
+          "price": "160",
+          "hotelName": "edaserry",
+          "_id": "698b6641a2ce8f2fac3e3a89"
+        },
+        {
+          "id": "1770743386890",
+          "name": "egg fried rice",
+          "description": "",
+          "price": "140",
+          "hotelName": "edaserry",
+          "_id": "698b665aa2ce8f2fac3e3a97"
+        },
+        {
+          "id": "1770743446471",
+          "name": "normal mandi",
+          "description": "",
+          "price": "180",
+          "hotelName": "Tarboosh mandi",
+          "_id": "698b6696a2ce8f2fac3e3ab2"
+        },
+        {
+          "id": "1770743471685",
+          "name": "spicy mandi",
+          "description": "",
+          "price": "190",
+          "hotelName": "Tarboosh mandi",
+          "_id": "698b66afa2ce8f2fac3e3ac6"
+        }
+      ],
+      "transport": [],
+      "events": [],
+      "emergency": {
+        "police": "",
+        "hospital": "",
+        "fire": ""
+      },
+      "lastUpdated": "2026-02-11T07:32:04.720Z",
+      "__v": 56
+    }
+  ],
+  "exportedAt": "2026-02-11T07:48:12.437Z"
+}

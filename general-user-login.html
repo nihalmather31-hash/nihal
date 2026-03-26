@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General User Login - Local Tourism Management</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a1628 0%, #0d2545 30%, #1a4a6e 60%, #1b4332 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        input {
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: rgba(126, 200, 164, 0.6);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(126, 200, 164, 0.15);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .error-message {
+            color: #ff8a80;
+            font-size: 0.82rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, #2d6a4f, #40916c);
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .login-button:hover {
+            background: linear-gradient(135deg, #40916c, #52b788);
+            transform: translateY(-2px);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.2rem;
+            color: #7ec8a4;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <h2>General User Login</h2>
+        <form onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+                <div class="error-message" id="errorMessage">Invalid username or password</div>
+            </div>
+            <button type="submit" class="login-button" id="loginBtn">Login</button>
+        </form>
+        <a href="index.html" class="back-link">← Back to home</a>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+
+            errorMessage.classList.remove('show');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            const response = await api.login(username, password, 'general');
+
+            if (response.success) {
+                window.location.href = 'dashboard-general.html';
+            } else {
+                errorMessage.textContent = response.message || 'Invalid username or password';
+                errorMessage.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Tourism Management</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: #0a1628;
+            color: white;
+            position: relative;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-scene {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        /* Sky gradient */
+        .bg-sky {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg,
+                    #0a1628 0%,
+                    #0d2545 20%,
+                    #1a4a6e 45%,
+                    #2d6a4f 70%,
+                    #1b4332 100%);
+        }
+
+        /* Stars */
+        .stars {
+            position: absolute;
+            inset: 0;
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            background: white;
+            animation: twinkle var(--dur, 3s) ease-in-out infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.3);
+            }
+        }
+
+        /* Mountains silhouette */
+        .mountains {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 55%;
+        }
+
+        .mountain-back {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+        }
+
+        .mountain-back svg,
+        .mountain-front svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .mountain-front {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+        }
+
+        /* Floating particles (fireflies / leaves) */
+        .particles {
+            position: absolute;
+            inset: 0;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 220, 100, 0.7);
+            box-shadow: 0 0 6px rgba(255, 220, 100, 0.8);
+            animation: float-particle var(--dur, 8s) ease-in-out infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-120px) translateX(var(--drift, 30px)) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Aurora effect */
+        .aurora {
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 50%;
+            background: linear-gradient(180deg,
+                    transparent 0%,
+                    rgba(32, 178, 170, 0.08) 30%,
+                    rgba(64, 224, 208, 0.12) 50%,
+                    rgba(32, 178, 170, 0.06) 70%,
+                    transparent 100%);
+            animation: aurora-move 12s ease-in-out infinite alternate;
+            filter: blur(20px);
+        }
+
+        @keyframes aurora-move {
+            0% {
+                transform: translateX(-10%) skewX(-5deg);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateX(10%) skewX(5deg);
+                opacity: 1;
+            }
+        }
+
+        /* Moon */
+        .moon {
+            position: absolute;
+            top: 8%;
+            right: 12%;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fffde7, #ffd54f);
+            box-shadow: 0 0 30px rgba(255, 213, 79, 0.4), 0 0 60px rgba(255, 213, 79, 0.2);
+            animation: moon-glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes moon-glow {
+            0% {
+                box-shadow: 0 0 30px rgba(255, 213, 79, 0.4), 0 0 60px rgba(255, 213, 79, 0.2);
+            }
+
+            100% {
+                box-shadow: 0 0 40px rgba(255, 213, 79, 0.6), 0 0 80px rgba(255, 213, 79, 0.3);
+            }
+        }
+
+        /* ===== LAYOUT ===== */
+        .page-wrapper {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Admin Corner Menu */
+        .admin-corner {
+            position: fixed;
+            top: 1.2rem;
+            right: 1.2rem;
+            z-index: 1000;
+        }
+
+        .admin-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.65rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .admin-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .admin-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background: rgba(10, 22, 40, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            min-width: 200px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .admin-dropdown.show {
+            display: flex;
+        }
+
+        .admin-option {
+            padding: 0.85rem 1.2rem;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .admin-option:last-child {
+            border-bottom: none;
+        }
+
+        .admin-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding-left: 1.5rem;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            padding: 3rem 2rem 1.5rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #a8d8ea 50%, #7ec8a4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            animation: fadeInDown 0.8s ease-out;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            margin-top: 0.6rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            animation: fadeInDown 0.8s ease-out 0.1s both;
+        }
+
+        /* ===== LOGIN CONTAINER ===== */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            padding: 1rem 2rem 3rem;
+        }
+
+        /* Glassmorphism card */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .form-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.3px;
+        }
+
+        .input-group input {
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: rgba(126, 200, 164, 0.6);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(126, 200, 164, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .error-message {
+            color: #ff8a80;
+            font-size: 0.82rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .login-button {
+            background: linear-gradient(135deg, #2d6a4f, #40916c);
+            color: white;
+            border: none;
+            padding: 0.9rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(45, 106, 79, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 0.3rem;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 106, 79, 0.5);
+            background: linear-gradient(135deg, #40916c, #52b788);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: none;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .register-link a {
+            color: #7ec8a4;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .register-link a:hover {
+            color: #52b788;
+            text-decoration: underline;
+        }
+
+        /* Admin Login Form (hidden by default) */
+        .admin-login-form {
+            display: none;
+        }
+
+        .admin-login-form.show {
+            display: flex;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Credential hint */
+        .hint-box {
+            background: rgba(126, 200, 164, 0.1);
+            border: 1px solid rgba(126, 200, 164, 0.25);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.65);
+            line-height: 1.6;
+        }
+
+        .hint-box strong {
+            color: #7ec8a4;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .admin-corner {
+                top: 0.8rem;
+                right: 0.8rem;
+            }
+
+            .admin-toggle {
+                padding: 0.5rem 0.9rem;
+                font-size: 0.8rem;
+            }
+
+            .login-form {
+                padding: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background Scene -->
+    <div class="bg-scene">
+        <div class="bg-sky"></div>
+        <div class="aurora"></div>
+        <div class="moon"></div>
+        <div class="stars" id="stars"></div>
+        <div class="particles" id="particles"></div>
+        <div class="mountains">
+            <!-- Back mountains -->
+            <div class="mountain-back">
+                <svg viewBox="0 0 1440 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M0,400 L0,280 L120,180 L240,250 L360,140 L480,220 L600,100 L720,200 L840,130 L960,210 L1080,160 L1200,230 L1320,170 L1440,240 L1440,400 Z"
+                        fill="#1a3a2a" opacity="0.7" />
+                </svg>
+            </div>
+            <!-- Front mountains -->
+            <div class="mountain-front">
+                <svg viewBox="0 0 1440 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M0,300 L0,220 L80,160 L160,200 L280,100 L400,170 L520,80 L640,160 L760,90 L880,160 L1000,110 L1120,180 L1240,120 L1360,190 L1440,150 L1440,300 Z"
+                        fill="#0d2d1a" opacity="0.9" />
+                    <!-- Snow caps -->
+                    <path d="M520,80 L490,110 L550,110 Z" fill="rgba(255,255,255,0.6)" />
+                    <path d="M760,90 L735,115 L785,115 Z" fill="rgba(255,255,255,0.5)" />
+                    <path d="M280,100 L258,125 L302,125 Z" fill="rgba(255,255,255,0.4)" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-wrapper">
+        <!-- Top Right Admin Link -->
+        <div class="admin-corner">
+            <button class="admin-toggle" onclick="showForm('adminLoginForm')">
+                👑 Admin Login
+            </button>
+        </div>
+
+        <header>
+            <h1>Local Tourism Management</h1>
+            <p class="subtitle">Discover • Explore • Experience</p>
+        </header>
+
+        <div class="login-container" id="formsWrapper" style="display: flex;">
+            <!-- User Login Form -->
+            <form class="login-form" id="generalLoginForm" style="display: flex;" onsubmit="handleGeneralLogin(event)">
+                <h2 class="form-title">User Login</h2>
+
+                <div class="hint-box">
+                    <strong>Test Credentials:</strong><br>
+                    Username: <strong>testuser</strong> &nbsp;|&nbsp; Password: <strong>test123</strong>
+                </div>
+
+                <div class="input-group">
+                    <label for="generalUsername">Username</label>
+                    <input type="text" id="generalUsername" name="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="generalPassword">Password</label>
+                    <input type="password" id="generalPassword" name="password" placeholder="Enter your password"
+                        required>
+                    <div class="error-message" id="generalErrorMessage">Invalid username or password</div>
+                </div>
+
+                <button type="submit" class="login-button">Login</button>
+
+                <div class="divider">or</div>
+
+                <div class="register-link">
+                    Don't have an account? <a href="javascript:void(0)" onclick="showForm('userSignupForm')">Sign up
+                        here</a>
+                </div>
+            </form>
+
+            <!-- Admin Login Form (Hidden by default) -->
+            <form class="login-form admin-login-form" id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                <h2 class="form-title" id="adminFormTitle">Admin Login</h2>
+                <input type="hidden" id="adminRole" name="adminRole" value="">
+
+                <div class="input-group">
+                    <label for="adminUsername">Username</label>
+                    <input type="text" id="adminUsername" name="username" placeholder="Enter admin username" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" name="password" placeholder="Enter admin password"
+                        required>
+                    <div class="error-message" id="adminErrorMessage">Invalid username or password</div>
+                </div>
+
+                <button type="submit" class="login-button">Login</button>
+                <button type="button" class="login-button back-button" onclick="showForm('generalLoginForm')">← Back to
+                    Login</button>
+            </form>
+
+            <!-- User Signup Form -->
+            <form class="login-form" id="userSignupForm" style="display: none; max-width: 500px;"
+                onsubmit="handleRegistration(event)">
+                <h2 class="form-title">Create Account</h2>
+
+                <div id="successMessage"
+                    style="display: none; background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; color: #4CAF50; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+                    Registration successful! Please login.
+                </div>
+
+                <div class="input-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" required>
+                    <div class="error-message" id="usernameError">Username must be at least 3 characters</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email">
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" required>
+                    <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm Password *</label>
+                    <input type="password" id="confirmPassword" required>
+                    <div class="error-message" id="confirmPasswordError">Passwords do not match</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName">
+                </div>
+
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone">
+                </div>
+
+                <div class="input-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address">
+                </div>
+
+                <button type="submit" class="login-button" id="submitBtn">Register</button>
+                <button type="button" class="login-button back-button" onclick="showForm('generalLoginForm')">← Back to
+                    Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        // Generate stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 120; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 2.5 + 0.5;
+            star.style.cssText = `
+                width: ${size}px; height: ${size}px;
+                top: ${Math.random() * 60}%;
+                left: ${Math.random() * 100}%;
+                --dur: ${Math.random() * 3 + 2}s;
+                --delay: ${Math.random() * 4}s;
+            `;
+            starsContainer.appendChild(star);
+        }
+
+        // Generate firefly particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 25; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 4 + 2;
+            p.style.cssText = `
+                width: ${size}px; height: ${size}px;
+                bottom: ${Math.random() * 40 + 5}%;
+                left: ${Math.random() * 100}%;
+                --dur: ${Math.random() * 6 + 5}s;
+                --delay: ${Math.random() * 8}s;
+                --drift: ${(Math.random() - 0.5) * 60}px;
+            `;
+            particlesContainer.appendChild(p);
+        }
+
+        function showForm(formId) {
+            // Show specific form, hide others and reset them
+            ['generalLoginForm', 'userSignupForm', 'adminLoginForm'].forEach(id => {
+                const form = document.getElementById(id);
+                form.style.display = (id === formId) ? 'flex' : 'none';
+                if (id !== formId) form.reset();
+            });
+
+            document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+            document.getElementById('successMessage').style.display = 'none';
+
+            if (formId === 'adminLoginForm') {
+                document.getElementById('adminRole').value = 'main-admin';
+            }
+        }
+
+        // Handle general user login
+        async function handleGeneralLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('generalUsername').value.trim();
+            const password = document.getElementById('generalPassword').value;
+            const errorMessage = document.getElementById('generalErrorMessage');
+            const btn = event.submitter || document.querySelector('#generalLoginForm .login-button');
+
+            errorMessage.classList.remove('show');
+            if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
+
+            const response = await api.login(username, password, 'general');
+
+            if (response.success) {
+                window.location.href = 'dashboard-general.html';
+            } else {
+                errorMessage.textContent = response.message || 'Invalid username or password';
+                errorMessage.classList.add('show');
+                if (btn) { btn.disabled = false; btn.textContent = 'Login'; }
+            }
+        }
+
+        // Handle admin login
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            const role = document.getElementById('adminRole').value;
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const errorMessage = document.getElementById('adminErrorMessage');
+            const btn = event.submitter || document.querySelector('#adminLoginForm .login-button[type="submit"]');
+
+            errorMessage.classList.remove('show');
+            if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
+
+            const response = await api.login(username, password, role);
+
+            if (response.success) {
+                window.location.href = 'dashboard-main-admin.html';
+            } else {
+                errorMessage.textContent = response.message || 'Invalid username or password';
+                errorMessage.classList.add('show');
+                if (btn) { btn.disabled = false; btn.textContent = 'Login'; }
+            }
+        }
+
+        // Handle user registration
+        async function handleRegistration(event) {
+            event.preventDefault();
+
+            document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+            document.getElementById('successMessage').style.display = 'none';
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+
+            let hasError = false;
+
+            if (username.length < 3) {
+                document.getElementById('usernameError').classList.add('show');
+                hasError = true;
+            }
+
+            if (password.length < 6) {
+                document.getElementById('passwordError').classList.add('show');
+                hasError = true;
+            }
+
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+
+            try {
+                const response = await api.register(username, password, 'general', {
+                    email, fullName, phone, address
+                });
+
+                if (response.success) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        showForm('generalLoginForm');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Register';
+                    }, 2000);
+                } else {
+                    const errorEl = document.getElementById('usernameError');
+                    errorEl.textContent = response.message || 'Registration failed';
+                    errorEl.classList.add('show');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Register';
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                const errorEl = document.getElementById('usernameError');
+                errorEl.textContent = 'Registration failed. Please make sure the backend server is running.';
+                errorEl.classList.add('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register';
+            }
+        }
+    </script>
+</body>
+
+</html>
